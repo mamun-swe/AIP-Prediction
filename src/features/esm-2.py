@@ -326,14 +326,21 @@ df_esm2 = pd.concat([
     df_seq[["seq_id", "sequence", "label"]].reset_index(drop=True),
     df_emb
 ], axis=1)
-df_esm2.insert(2, "length", df_esm2["sequence"].apply(len))
+# ── REMOVED ──────────────────────────────────────────────
+# df_esm2.insert(2, "length", df_esm2["sequence"].apply(len))
+# ─────────────────────────────────────────────────────────────────
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_esm2 = df_esm2.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_esm2.columns if c != "label"] + ["label"] # ← move label to end
+df_esm2 = df_esm2[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 emb_cols = [c for c in df_esm2.columns if c.startswith("ESM2_")]
 
 print(f"✅ Feature DataFrame built")
 print(f"   Shape   : {df_esm2.shape}")
-print(f"   Columns : seq_id, sequence, length, label, "
-      f"ESM2_0 ... ESM2_{embedding_dim - 1}")
+print(f"      Columns : seq_id, ESM2_0...ESM2_N (embedding features), label")  # ← CHANGED: updated column description
 df_esm2.iloc[:3, :8]
 
 

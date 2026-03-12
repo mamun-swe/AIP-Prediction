@@ -1,3 +1,9 @@
+# ============================================================
+#   CELL 1 — Mount Google Drive
+# ============================================================
+# from google.colab import drive
+# drive.mount('/content/drive')
+
 
 # ============================================================
 #   CELL 2 — Install & Import Libraries
@@ -16,16 +22,24 @@ print("✅ Libraries loaded")
 #   CELL 3 — Configuration (Edit paths here)
 # ============================================================
 
-# ⚠️ Change this to where you uploaded AIP_ind.fasta in Drive
+# DRIVE PATH
+# FASTA_PATH   = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# LOCAL PATH
 FASTA_PATH   = "../../data/raw/AIP_ind.fasta"
 
-# Output will be saved here
-DATA_OUTPUT_DIR = "../../data/features"
-FIGURE_OUTPUT_DIR = "../../results/figures"
-OUTPUT_CSV   = os.path.join(DATA_OUTPUT_DIR, "AAC_features.csv")
+# Drive output (uncomment for Google Colab)
+# FIGURE_DIR   = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+# OUTPUT_DIR   = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
 
-os.makedirs(DATA_OUTPUT_DIR, exist_ok=True)
-print(f"✅ Output directory ready: {DATA_OUTPUT_DIR}")
+# Local output (uncomment for local runs)
+FIGURE_DIR   = "../../results/figures"
+OUTPUT_DIR   = "../../data/features"
+
+OUTPUT_CSV   = os.path.join(OUTPUT_DIR, "AAC_features.csv")
+
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+print(f"✅ Output directory ready: {OUTPUT_DIR}")
 
 
 # ============================================================
@@ -91,14 +105,22 @@ def extract_aac(df):
     aac_records = df["sequence"].apply(compute_aac)
     aac_df      = pd.DataFrame(list(aac_records))
     result      = pd.concat([df.reset_index(drop=True), aac_df], axis=1)
-    result.insert(2, "length", result["sequence"].apply(len))
+    # ── REMOVED ──────────────────────────────────────────────
+    # result.insert(2, "length", result["sequence"].apply(len))
+    # ─────────────────────────────────────────────────────────
     return result
 
 df_aac = extract_aac(df_seq)
 
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_aac = df_aac.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_aac.columns if c != "label"] + ["label"] # ← move label to end
+df_aac = df_aac[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
+
 print(f"✅ AAC extraction complete")
 print(f"   Shape   : {df_aac.shape}  (sequences × features)")
-print(f"   Features: {[c for c in df_aac.columns if c.startswith('AAC_')]}")
+print(f"   Columns : {list(df_aac.columns)}")                     # ← CHANGED: show all columns
 df_aac.head(3)
 
 
@@ -152,7 +174,7 @@ ax.set_xticklabels(AMINO_ACIDS, fontsize=11)
 ax.legend(fontsize=11)
 ax.grid(axis="y", alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURE_OUTPUT_DIR, "AAC_mean_comparison.png"), dpi=150)
+plt.savefig(os.path.join(FIGURE_DIR, "AAC_mean_comparison.png"), dpi=150)
 plt.show()
 print("✅ Plot saved")
 
@@ -175,7 +197,7 @@ ax.set_xlabel("Peptide Sequences", fontsize=12)
 ax.set_title("AAC Feature Heatmap (sample of 60 sequences)", fontsize=13, fontweight="bold")
 plt.colorbar(im, ax=ax, label="Frequency")
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURE_OUTPUT_DIR, "AAC_heatmap.png"), dpi=150)
+plt.savefig(os.path.join(FIGURE_DIR, "AAC_heatmap.png"), dpi=150)
 plt.show()
 print("✅ Heatmap saved")
 
@@ -203,7 +225,7 @@ legend_elements = [Patch(facecolor="#2ecc71", label="Higher in AIP"),
 ax.legend(handles=legend_elements, fontsize=10)
 
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURE_OUTPUT_DIR, "AAC_discriminative_features.png"), dpi=150)
+plt.savefig(os.path.join(FIGURE_DIR, "AAC_discriminative_features.png"), dpi=150)
 plt.show()
 print("✅ Discriminative feature plot saved")
 
@@ -218,5 +240,5 @@ print("=" * 50)
 print("✅ AAC feature extraction COMPLETE")
 print(f"   File    : {OUTPUT_CSV}")
 print(f"   Shape   : {df_aac.shape}")
-print(f"   Columns : seq_id, sequence, length, label, AAC_A...AAC_Y")
+print(f"   Columns : seq_id, AAC_A ... AAC_Y, label") # ← CHANGED: updated column description
 print("=" * 50)

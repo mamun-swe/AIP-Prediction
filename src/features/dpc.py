@@ -1,5 +1,8 @@
 
 
+# from google.colab import drive
+# drive.mount('/content/drive')
+
 # ============================================================
 #   CELL 2 — Install & Import Libraries
 # ============================================================
@@ -18,13 +21,24 @@ print("✅ Libraries loaded")
 #   CELL 3 — Configuration (Edit paths here)
 # ============================================================
 
+# LOCAL DATA PATH
 FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
 
-# Features saved here
+# DRIVE DATA PATH
+# FASTA_PATH  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# OUTPUT_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 OUTPUT_DIR  = "../../data/features"
+
 OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "DPC_features.csv")
 
-# Images saved here
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# FIGURES_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 FIGURES_DIR = "../../results/figures"
 
 os.makedirs(OUTPUT_DIR,  exist_ok=True)
@@ -117,10 +131,18 @@ def extract_dpc(df):
     dpc_records = df["sequence"].apply(compute_dpc)
     dpc_df      = pd.DataFrame(list(dpc_records))
     result      = pd.concat([df.reset_index(drop=True), dpc_df], axis=1)
-    result.insert(2, "length", result["sequence"].apply(len))
+    # ── REMOVED ──────────────────────────────────────────────
+    # result.insert(2, "length", result["sequence"].apply(len))
+    # ─────────────────────────────────────────────────────────────────
     return result
 
 df_dpc = extract_dpc(df_seq)
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_dpc = df_dpc.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_dpc.columns if c != "label"] + ["label"] # ← move label to end
+df_dpc = df_dpc[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 print(f"\n✅ DPC extraction complete")
 print(f"   Shape   : {df_dpc.shape}  (sequences × features)")
@@ -282,6 +304,6 @@ print("=" * 55)
 print("✅ DPC Feature Extraction COMPLETE")
 print(f"   File     : {OUTPUT_CSV}")
 print(f"   Shape    : {df_dpc.shape}")
-print(f"   Columns  : seq_id, sequence, length, label, DPC_AA...DPC_YY")
+print(f"      Columns  : seq_id, DPC_AA...DPC_YY (400 features), label")  # ← CHANGED: updated column description
 print(f"   Figures  : {FIGURES_DIR}")
 print("=" * 55)

@@ -34,7 +34,7 @@ print("✅ Libraries installed")
 # ============================================================
 from huggingface_hub import login
 
-HF_TOKEN = "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"   # ← paste your token here
+HF_TOKEN = "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"   # ← paste your token here
 
 login(token=HF_TOKEN, add_to_git_credential=False)
 print("✅ HuggingFace login successful")
@@ -362,14 +362,21 @@ df_esmc   = pd.concat([
     df_seq[["seq_id", "sequence", "label"]].reset_index(drop=True),
     df_emb
 ], axis=1)
-df_esmc.insert(2, "length", df_esmc["sequence"].apply(len))
+# ── REMOVED ──────────────────────────────────────────────
+# df_esmc.insert(2, "length", df_esmc["sequence"].apply(len))
+# ─────────────────────────────────────────────────────────────────
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_esmc = df_esmc.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_esmc.columns if c != "label"] + ["label"] # ← move label to end
+df_esmc = df_esmc[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 emb_cols = [c for c in df_esmc.columns if c.startswith("ESMC_")]
 
 print(f"✅ Feature DataFrame built")
 print(f"   Shape   : {df_esmc.shape}")
-print(f"   Columns : seq_id, sequence, length, label, "
-      f"ESMC_0 ... ESMC_{embedding_dim - 1}")
+print(f"      Columns : seq_id, ESMC_0...ESMC_N (embedding features), label")  # ← CHANGED: updated column description
 df_esmc.iloc[:3, :8]
 
 

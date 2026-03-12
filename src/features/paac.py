@@ -1,3 +1,9 @@
+# ============================================================
+#   CELL 1 — Mount Google Drive
+# ============================================================
+# from google.colab import drive
+# drive.mount('/content/drive')
+
 
 # ============================================================
 #   CELL 2 — Install & Import Libraries
@@ -16,11 +22,24 @@ print("✅ Libraries loaded")
 #   CELL 3 — Configuration (Edit paths here)
 # ============================================================
 
+# LOCAL DATA PATH
 FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
 
+# DRIVE DATA PATH
+# FASTA_PATH  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# OUTPUT_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 OUTPUT_DIR  = "../../data/features"
+
 OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "PAAC_features.csv")
 
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# FIGURES_DIR = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 FIGURES_DIR = "../../results/figures"
 
 # PAAC hyperparameter: sequence-order lag (1 ≤ λ ≤ L-1)
@@ -218,10 +237,18 @@ def extract_paac(df, lam=LAMBDA, weight=WEIGHT):
     paac_df = paac_df.reindex(columns=aa_cols + t_cols, fill_value=0.0)
 
     result  = pd.concat([df.reset_index(drop=True), paac_df], axis=1)
-    result.insert(2, "length", result["sequence"].apply(len))
+    # ── REMOVED ──────────────────────────────────────────────
+    # result.insert(2, "length", result["sequence"].apply(len))
+    # ─────────────────────────────────────────────────────────────────
     return result
 
 df_paac = extract_paac(df_seq)
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_paac = df_paac.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_paac.columns if c != "label"] + ["label"] # ← move label to end
+df_paac = df_paac[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 # ✅ Fix 4: Column lists always derived from actual dataframe
 paac_cols    = [c for c in df_paac.columns if c.startswith("PAAC_")]
@@ -337,8 +364,8 @@ print("✅ Component comparison saved")
 fig, ax = plt.subplots(figsize=(10, 5))
 
 max_lambda      = 10
-sample_pos      = df_paac[df_paac["label"] == 1]["sequence"].tolist()
-sample_neg      = df_paac[df_paac["label"] == 0]["sequence"].tolist()
+sample_pos      = df_seq[df_seq["label"] == 1]["sequence"].tolist()   # ← FIXED: use df_seq (sequence dropped from df_paac)
+sample_neg      = df_seq[df_seq["label"] == 0]["sequence"].tolist()   # ← FIXED: use df_seq (sequence dropped from df_paac)
 theta_pos_means = []
 theta_neg_means = []
 

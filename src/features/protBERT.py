@@ -1,3 +1,10 @@
+
+# ============================================================
+#   CELL 1 — Mount Google Drive
+# ============================================================
+from google.colab import drive
+drive.mount('/content/drive')
+
 # ============================================================
 #   CELL 3 — Import Libraries
 # ============================================================
@@ -26,13 +33,29 @@ else:
 #   CELL 4 — Configuration (Edit paths here)
 # ============================================================
 
-FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
+# LOCAL DATA PATH
+# FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
 
-OUTPUT_DIR  = "../../data/features"
+# DRIVE DATA PATH
+FASTA_PATH  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+OUTPUT_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
+# OUTPUT_DIR  = "../../data/features"
+
+OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "PAAC_features.csv")
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+FIGURES_DIR = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
+# FIGURES_DIR = "../../results/figures"
+
+
 OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "ProtBERT_features.csv")
 OUTPUT_NPY  = os.path.join(OUTPUT_DIR, "ProtBERT_embeddings.npy")
-
-FIGURES_DIR = "../../results/figures"
 
 # ProtBERT model name from HuggingFace Hub
 # Options:
@@ -295,12 +318,19 @@ df_protbert = pd.concat([
     df_seq[["seq_id", "sequence", "label"]].reset_index(drop=True),
     df_emb
 ], axis=1)
-df_protbert.insert(2, "length", df_protbert["sequence"].apply(len))
+# ── REMOVED ──────────────────────────────────────────────
+# df_protbert.insert(2, "length", df_protbert["sequence"].apply(len))
+# ─────────────────────────────────────────────────────────────────
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_protbert = df_protbert.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_protbert.columns if c != "label"] + ["label"] # ← move label to end
+df_protbert = df_protbert[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 print(f"✅ Feature DataFrame built")
 print(f"   Shape   : {df_protbert.shape}")
-print(f"   Columns : seq_id, sequence, length, label, "
-      f"ProtBERT_0 ... ProtBERT_{embedding_dim-1}")
+print(f"      Columns : seq_id, ProtBERT_0...ProtBERT_767 (768 features), label")  # ← CHANGED: updated column description
 df_protbert.iloc[:3, :8]
 
 

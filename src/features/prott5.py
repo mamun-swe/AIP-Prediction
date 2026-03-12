@@ -353,14 +353,21 @@ df_prott5 = pd.concat([
     df_seq[["seq_id", "sequence", "label"]].reset_index(drop=True),
     df_emb
 ], axis=1)
-df_prott5.insert(2, "length", df_prott5["sequence"].apply(len))
+# ── REMOVED ──────────────────────────────────────────────
+# df_prott5.insert(2, "length", df_prott5["sequence"].apply(len))
+# ─────────────────────────────────────────────────────────────────
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_prott5 = df_prott5.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_prott5.columns if c != "label"] + ["label"] # ← move label to end
+df_prott5 = df_prott5[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 emb_cols = [c for c in df_prott5.columns if c.startswith("ProtT5_")]
 
 print(f"✅ Feature DataFrame built")
 print(f"   Shape   : {df_prott5.shape}")
-print(f"   Columns : seq_id, sequence, length, label, "
-      f"ProtT5_0 ... ProtT5_{embedding_dim-1}")
+print(f"      Columns : seq_id, ProtT5_0...ProtT5_1023 (1024 features), label")  # ← CHANGED: updated column description
 df_prott5.iloc[:3, :8]
 
 

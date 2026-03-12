@@ -1,4 +1,12 @@
 
+
+# ============================================================
+#   CELL 1 — Mount Google Drive
+# ============================================================
+# from google.colab import drive
+# drive.mount('/content/drive')
+
+
 # ============================================================
 #   CELL 2 — Install & Import Libraries
 # ============================================================
@@ -16,11 +24,24 @@ print("✅ Libraries loaded")
 #   CELL 3 — Configuration (Edit paths here)
 # ============================================================
 
+# LOCAL DATA PATH
 FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
 
+# DRIVE DATA PATH
+# FASTA_PATH  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# OUTPUT_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 OUTPUT_DIR  = "../../data/features"
+
 OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "GAAC_features.csv")
 
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# FIGURES_DIR = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 FIGURES_DIR = "../../results/figures"
 
 os.makedirs(OUTPUT_DIR,  exist_ok=True)
@@ -141,10 +162,18 @@ def extract_gaac(df):
     gaac_records = df["sequence"].apply(compute_gaac)
     gaac_df      = pd.DataFrame(list(gaac_records))
     result       = pd.concat([df.reset_index(drop=True), gaac_df], axis=1)
-    result.insert(2, "length", result["sequence"].apply(len))
+    # ── REMOVED ──────────────────────────────────────────────
+    # result.insert(2, "length", result["sequence"].apply(len))
+    # ─────────────────────────────────────────────────────────────────
     return result
 
 df_gaac = extract_gaac(df_seq)
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_gaac = df_gaac.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_gaac.columns if c != "label"] + ["label"] # ← move label to end
+df_gaac = df_gaac[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 gaac_cols = [c for c in df_gaac.columns if c.startswith("GAAC_")]
 

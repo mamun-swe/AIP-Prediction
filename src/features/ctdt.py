@@ -1,6 +1,13 @@
 
 
 # ============================================================
+#   CELL 1 — Mount Google Drive
+# ============================================================
+# from google.colab import drive
+# drive.mount('/content/drive')
+
+
+# ============================================================
 #   CELL 2 — Install & Import Libraries
 # ============================================================
 import pandas as pd
@@ -17,11 +24,24 @@ print("✅ Libraries loaded")
 #   CELL 3 — Configuration (Edit paths here)
 # ============================================================
 
+# LOCAL DATA PATH
 FASTA_PATH  = "../../data/raw/AIP_ind.fasta"
 
+# DRIVE DATA PATH
+# FASTA_PATH  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/raw/AIP_ind.fasta"
+
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# OUTPUT_DIR  = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/data/features"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 OUTPUT_DIR  = "../../data/features"
+
 OUTPUT_CSV  = os.path.join(OUTPUT_DIR, "CTDT_features.csv")
 
+# Output will be saved here (ONLY for Google Colab, ignored in local runs)
+# FIGURES_DIR = "/content/drive/MyDrive/CANADA/Thesis/API-Prediction/results/figures"
+
+# Output will be saved here (ONLY for local runs, ignored in Google Colab)
 FIGURES_DIR = "../../results/figures"
 
 os.makedirs(OUTPUT_DIR,  exist_ok=True)
@@ -206,10 +226,18 @@ def extract_ctdt(df):
     ctdt_records = df["sequence"].apply(compute_ctdt)
     ctdt_df      = pd.DataFrame(list(ctdt_records))
     result       = pd.concat([df.reset_index(drop=True), ctdt_df], axis=1)
-    result.insert(2, "length", result["sequence"].apply(len))
+    # ── REMOVED ──────────────────────────────────────────────
+    # result.insert(2, "length", result["sequence"].apply(len))
+    # ─────────────────────────────────────────────────────────────────
     return result
 
 df_ctdt = extract_ctdt(df_seq)
+
+# ── CHANGED (Block): drop sequence & length, move label to end ──
+df_ctdt = df_ctdt.drop(columns=["sequence"])                        # ← remove sequence column
+cols   = [c for c in df_ctdt.columns if c != "label"] + ["label"] # ← move label to end
+df_ctdt = df_ctdt[cols]                                             # ← reorder columns
+# ────────────────────────────────────────────────────────────────
 
 ctdt_cols = [c for c in df_ctdt.columns if c.startswith("CTDT_")]
 
