@@ -1,0 +1,21 @@
+{
+    "criterion": "gini",
+    "splitter": "best",
+    "min_samples_split": 8,
+    "min_samples_leaf": 18,
+    "max_features": "None",
+    "class_weight": "balanced",
+    "ccp_alpha": 0.003392576148633157,
+    "max_depth": "None",
+    "random_state": 42,
+    "cv_auc": 0.645,
+    "test_auc": 0.6319,
+    "accuracy": 0.5799,
+    "sensitivity": 0.6008,
+    "specificity": 0.566,
+    "f1_score": 0.5338,
+    "mcc": 0.1634,
+    "best_trial": 77,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

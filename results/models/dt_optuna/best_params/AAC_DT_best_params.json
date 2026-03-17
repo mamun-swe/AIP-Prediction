@@ -1,0 +1,21 @@
+{
+    "max_depth": 21,
+    "criterion": "gini",
+    "splitter": "best",
+    "min_samples_split": 15,
+    "min_samples_leaf": 20,
+    "max_features": "None",
+    "class_weight": "None",
+    "ccp_alpha": 0.004281859603141741,
+    "random_state": 42,
+    "cv_auc": 0.7907,
+    "test_auc": 0.7779,
+    "accuracy": 0.7321,
+    "sensitivity": 0.692,
+    "specificity": 0.7589,
+    "f1_score": 0.6741,
+    "mcc": 0.4474,
+    "best_trial": 56,
+    "n_trials": 100,
+    "dataset": "AAC"
+}

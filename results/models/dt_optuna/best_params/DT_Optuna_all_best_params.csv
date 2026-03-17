@@ -1,0 +1,12 @@
+Dataset,max_depth,criterion,splitter,min_samples_split,min_samples_leaf,max_features,class_weight,ccp_alpha,CV_AUC,Test_AUC
+AAC,21.0,gini,best,15,20,,,0.004281859603141741,0.7907,0.7779
+DPC,,gini,best,7,5,,balanced,0.0004474994839393854,0.7121,0.7252
+CTDC,6.0,gini,best,4,20,,balanced,0.0011303079710211052,0.7714,0.7846
+CTDT,9.0,log_loss,best,5,18,,,0.011969160386150559,0.7437,0.7485
+GAAC,7.0,gini,best,18,9,,,0.0016792942467236047,0.7639,0.7803
+PAAC,5.0,gini,best,18,6,,balanced,0.003941808039088121,0.7074,0.6751
+ProtBERT,23.0,entropy,random,3,13,,,0.003747436479214809,0.5775,0.5365
+ProtT5,,gini,best,8,18,,balanced,0.003392576148633157,0.645,0.6319
+ESM2,,entropy,random,13,20,,balanced,0.008408037151281645,0.6256,0.5767
+BioBERT,4.0,entropy,best,15,11,,,8.85934083642995e-05,0.6485,0.635
+ESMC,26.0,gini,best,11,20,sqrt,balanced,0.004164806732454772,0.6327,0.6198

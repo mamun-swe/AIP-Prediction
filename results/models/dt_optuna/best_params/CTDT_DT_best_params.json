@@ -1,0 +1,21 @@
+{
+    "max_depth": 9,
+    "criterion": "log_loss",
+    "splitter": "best",
+    "min_samples_split": 5,
+    "min_samples_leaf": 18,
+    "max_features": "None",
+    "class_weight": "None",
+    "ccp_alpha": 0.011969160386150559,
+    "random_state": 42,
+    "cv_auc": 0.7437,
+    "test_auc": 0.7485,
+    "accuracy": 0.7549,
+    "sensitivity": 0.5133,
+    "specificity": 0.9162,
+    "f1_score": 0.6265,
+    "mcc": 0.4824,
+    "best_trial": 21,
+    "n_trials": 100,
+    "dataset": "CTDT"
+}
