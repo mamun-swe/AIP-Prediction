@@ -24,7 +24,7 @@ import optuna
 from optuna.samplers import TPESampler
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
 from sklearn.model_selection import (
     train_test_split, StratifiedKFold, cross_val_score
 )
@@ -45,17 +45,17 @@ print(f"   Optuna version : {optuna.__version__}")
 
 # DRIVE DATA PATH (ONLY for Google Colab, ignored in local runs)
 # FEATURE_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/data/features"
-# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/rf_optuna"
-# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna/best_params"
+# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/et_optuna"
+# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/et_optuna"
+# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/et_optuna"
+# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/et_optuna/best_params"
 
 # LOCAL DATA PATH (ONLY for local runs, ignored in Google Colab)
 FEATURE_DIR  = "../../../data/features"
-RESULTS_DIR  = "../../../results/models/rf_optuna"
-FIGURES_DIR  = "../../../results/figures/models/rf_optuna"
-MODELS_DIR   = "../../../results/models/rf_optuna"
-PARAMS_DIR   = "../../../results/models/rf_optuna/best_params"
+RESULTS_DIR  = "../../../results/models/et_optuna"
+FIGURES_DIR  = "../../../results/figures/models/et_optuna"
+MODELS_DIR   = "../../../results/models/et_optuna"
+PARAMS_DIR   = "../../../results/models/et_optuna/best_params"
 
 os.makedirs(RESULTS_DIR,  exist_ok=True)
 os.makedirs(FIGURES_DIR,  exist_ok=True)
@@ -88,20 +88,37 @@ RANDOM_STATE = 42
 
 # ── Search space description ─────────────────────────────────
 #
+#  Extra Trees vs Random Forest — key differences in search space:
+#
+#  Random Forest:
+#    - bootstrap=True by default (samples rows with replacement)
+#    - max_samples only valid when bootstrap=True
+#    - Finds BEST split threshold at each node
+#
+#  Extra Trees:
+#    - bootstrap=False by default (uses all training samples)
+#    - No max_samples parameter needed
+#    - Uses RANDOM split thresholds → more variance reduction
+#    - Generally faster than RF with similar or better performance
+#
 #  Parameters tuned by Optuna:
-#    n_estimators      : number of trees in the forest
-#    max_depth         : max depth per tree (or None = unlimited)
-#    min_samples_split : min samples to split a node
-#    min_samples_leaf  : min samples at a leaf node
-#    max_features      : features considered at each split
-#                        "sqrt" → √n_features (classification default)
-#                        "log2" → log2(n_features)
-#                        float  → fraction of features (0.1–1.0)
-#    criterion         : split quality measure (gini / entropy / log_loss)
-#    bootstrap         : whether to use bootstrap samples per tree
-#    class_weight      : handles 1:1.5 AIP/non-AIP imbalance
-#    max_samples       : fraction of samples per tree (only if bootstrap=True)
-#    min_impurity_decrease: split only if impurity decrease >= this value
+#    n_estimators         : number of trees [50, 500]
+#    max_depth            : per-tree depth or None (unlimited)
+#    min_samples_split    : min samples to split a node [2, 20]
+#    min_samples_leaf     : min samples at leaf node [1, 20]
+#    max_features         : features per split
+#                           "sqrt"  → √n_features (classification default)
+#                           "log2"  → log2(n_features)
+#                           float   → fraction [0.1, 1.0]
+#    criterion            : split quality [gini / entropy / log_loss]
+#    bootstrap            : use bootstrap samples [True / False]
+#                           False = default for Extra Trees
+#    max_samples          : fraction of rows per tree [0.5, 1.0]
+#                           only when bootstrap=True (conditional)
+#    class_weight         : handles 1:1.5 imbalance
+#                           "balanced" / "balanced_subsample" / None
+#    min_impurity_decrease: prune splits with low gain [0.0, 0.05]
+#    max_leaf_nodes       : max leaf count per tree or None
 #
 SEARCH_SPACE = {
     "n_estimators"        : "int [50, 500]",
@@ -111,8 +128,10 @@ SEARCH_SPACE = {
     "max_features"        : ["sqrt", "log2", 0.3, 0.5, 0.7, 1.0],
     "criterion"           : ["gini", "entropy", "log_loss"],
     "bootstrap"           : [True, False],
+    "max_samples"         : "float [0.5, 1.0]  (bootstrap=True only)",
     "class_weight"        : ["balanced", "balanced_subsample", None],
     "min_impurity_decrease": "float [0.0, 0.05]",
+    "max_leaf_nodes"      : "int [10, 500] or None",
 }
 
 print(f"✅ Config loaded")
@@ -185,18 +204,23 @@ def load_dataset(csv_path):
 
 def make_objective(X_train, y_train, n_folds, seed):
     """
-    Returns an Optuna objective function closed over the training
-    data. Each trial samples a different hyperparameter combination
-    and evaluates it via stratified k-fold CV on the training set.
+    Returns an Optuna objective function for Extra Trees.
 
-    Objective: maximise mean AUC across k folds.
+    Objective: maximise mean AUC across stratified k-fold CV
+    on the training set.
 
-    Key RF-specific design decisions:
-      - max_depth: sampled as int OR None via conditional encoding
-      - max_features: includes both categorical strings and floats
-      - max_samples: only relevant when bootstrap=True, so it is
-        conditionally sampled to avoid wasted trials
-      - n_jobs=-1 in CV for parallelism
+    Extra Trees-specific design decisions:
+      - max_depth: sampled conditionally — can be None (unlimited)
+        or an integer — same pattern as DT/RF Optuna scripts
+      - bootstrap: sampled as True/False
+        Extra Trees default is False (no bootstrapping)
+        When True, max_samples is additionally sampled
+      - max_leaf_nodes: sampled conditionally — None or int [10,500]
+        Provides an additional structural regularisation mechanism
+        beyond max_depth
+      - class_weight: includes "balanced_subsample" which rebalances
+        within each bootstrap sample (only meaningful when bootstrap=True
+        but sklearn handles this gracefully when bootstrap=False too)
     """
     def objective(trial):
 
@@ -214,6 +238,13 @@ def make_objective(X_train, y_train, n_folds, seed):
         max_samples = trial.suggest_float(
             "max_samples", 0.5, 1.0
         ) if bootstrap else None
+
+        # ── max_leaf_nodes: None or int ──────────────────────
+        use_none_leaves = trial.suggest_categorical(
+            "max_leaf_nodes_none", [True, False]
+        )
+        max_leaf_nodes = None if use_none_leaves else \
+            trial.suggest_int("max_leaf_nodes", 10, 500)
 
         params = {
             "n_estimators"        : trial.suggest_int(
@@ -241,11 +272,12 @@ def make_objective(X_train, y_train, n_folds, seed):
             "min_impurity_decrease": trial.suggest_float(
                 "min_impurity_decrease", 0.0, 0.05
             ),
+            "max_leaf_nodes"      : max_leaf_nodes,
             "n_jobs"              : -1,
             "random_state"        : seed,
         }
 
-        clf = RandomForestClassifier(**params)
+        clf = ExtraTreesClassifier(**params)
         cv  = StratifiedKFold(
             n_splits=n_folds, shuffle=True, random_state=seed
         )
@@ -260,23 +292,33 @@ def make_objective(X_train, y_train, n_folds, seed):
 
 def extract_best_params(trial_params, random_state):
     """
-    Reconstruct the final RF parameter dict from Optuna trial
-    params, handling conditional encodings for max_depth and
-    max_samples.
+    Reconstruct the final Extra Trees parameter dict from Optuna
+    trial params. Handles three conditional encodings:
+      - max_depth_none    → max_depth
+      - bootstrap         → max_samples
+      - max_leaf_nodes_none → max_leaf_nodes
     """
     params = trial_params.copy()
 
-    # max_depth
-    use_none = params.pop("max_depth_none", True)
-    if not use_none:
+    # ── max_depth ────────────────────────────────────────────
+    use_none_depth = params.pop("max_depth_none", True)
+    if not use_none_depth:
         params["max_depth"] = params.get("max_depth", None)
     else:
         params.pop("max_depth", None)
         params["max_depth"] = None
 
-    # max_samples only valid when bootstrap=True
-    if not params.get("bootstrap", True):
+    # ── max_samples ──────────────────────────────────────────
+    if not params.get("bootstrap", False):
         params["max_samples"] = None
+
+    # ── max_leaf_nodes ───────────────────────────────────────
+    use_none_leaves = params.pop("max_leaf_nodes_none", True)
+    if not use_none_leaves:
+        params["max_leaf_nodes"] = params.get("max_leaf_nodes", None)
+    else:
+        params.pop("max_leaf_nodes", None)
+        params["max_leaf_nodes"] = None
 
     params["n_jobs"]       = -1
     params["random_state"] = random_state
@@ -296,7 +338,7 @@ all_probs     = {}
 all_studies   = {}
 
 print("=" * 65)
-print("  Random Forest + Optuna — Training on 11 Datasets")
+print("  Extra Trees + Optuna — Training on 11 Datasets")
 print(f"  Trials per dataset : {N_TRIALS}")
 print(f"  CV folds           : {N_CV_FOLDS} (StratifiedKFold)")
 print(f"  Sampler            : TPE (Tree-structured Parzen Estimator)")
@@ -339,7 +381,7 @@ for ds_name, csv_file in DATASETS.items():
     study = optuna.create_study(
         direction  = "maximize",
         sampler    = TPESampler(seed=OPTUNA_SEED),
-        study_name = f"RF_{ds_name}",
+        study_name = f"ET_{ds_name}",
     )
     study.optimize(
         make_objective(X_train, y_train, N_CV_FOLDS, RANDOM_STATE),
@@ -356,13 +398,14 @@ for ds_name, csv_file in DATASETS.items():
     cv_auc = study.best_trial.value
 
     print(f"\n  ── Best Parameters (trial #{study.best_trial.number}) ──")
+    skip_print = {"n_jobs", "random_state"}
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
+        if k not in skip_print:
             print(f"     {k:<25} : {v}")
     print(f"     {'CV AUC':<25} : {cv_auc:.4f}")
 
     # ── Train final model with best parameters ────────────────
-    clf = RandomForestClassifier(**best_params)
+    clf = ExtraTreesClassifier(**best_params)
     clf.fit(X_train, y_train)
 
     # ── Predict ──────────────────────────────────────────────
@@ -379,7 +422,7 @@ for ds_name, csv_file in DATASETS.items():
     metrics["Test_N"]     = len(X_test)
 
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
+        if k not in skip_print:
             metrics[f"param_{k}"] = v
     all_results.append(metrics)
 
@@ -402,7 +445,7 @@ for ds_name, csv_file in DATASETS.items():
         "prob_negative": 1 - y_prob,
     })
     prob_path = os.path.join(
-        RESULTS_DIR, f"{ds_name}_RF_Optuna_probabilities.csv"
+        RESULTS_DIR, f"{ds_name}_ET_Optuna_probabilities.csv"
     )
     df_probs.to_csv(prob_path, index=False)
 
@@ -410,7 +453,7 @@ for ds_name, csv_file in DATASETS.items():
     params_to_save = {
         k: (str(v) if v is None else v)
         for k, v in best_params.items()
-        if k not in ("random_state", "n_jobs")
+        if k not in skip_print
     }
     params_to_save.update({
         "cv_auc"     : round(cv_auc, 4),
@@ -425,7 +468,7 @@ for ds_name, csv_file in DATASETS.items():
         "dataset"    : ds_name,
     })
     param_path = os.path.join(
-        PARAMS_DIR, f"{ds_name}_RF_best_params.json"
+        PARAMS_DIR, f"{ds_name}_ET_best_params.json"
     )
     with open(param_path, "w") as f:
         json.dump(params_to_save, f, indent=4)
@@ -470,18 +513,18 @@ df_results = pd.DataFrame(all_results)[metric_cols].sort_values(
 
 df_results.index += 1
 
-print("\n── RF + Optuna Performance Summary (sorted by Test AUC) ──")
+print("\n── ET + Optuna Performance Summary (sorted by Test AUC) ──")
 print(df_results.to_string())
 
 summary_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_all_results_summary.csv"
+    RESULTS_DIR, "ET_Optuna_all_results_summary.csv"
 )
 df_results.to_csv(summary_path, index=True, index_label="Rank")
 print(f"\n✅ Summary saved → {summary_path}")
 
 df_full   = pd.DataFrame(all_results)
 full_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_full_results_with_params.csv"
+    RESULTS_DIR, "ET_Optuna_full_results_with_params.csv"
 )
 df_full.to_csv(full_path, index=False)
 print(f"✅ Full results (with params) saved → {full_path}")
@@ -492,10 +535,10 @@ print(f"✅ Full results (with params) saved → {full_path}")
 # ============================================================
 
 best_model_path  = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_model_{best_name}.joblib"
+    MODELS_DIR, f"ET_Optuna_best_model_{best_name}.joblib"
 )
 best_scaler_path = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_scaler_{best_name}.joblib"
+    MODELS_DIR, f"ET_Optuna_best_scaler_{best_name}.joblib"
 )
 
 joblib.dump(best_model,  best_model_path)
@@ -504,7 +547,7 @@ joblib.dump(best_scaler, best_scaler_path)
 best_params_summary = {
     k: (str(v) if v is None else v)
     for k, v in all_probs[best_name]["best_params"].items()
-    if k not in ("random_state", "n_jobs")
+    if k not in {"n_jobs", "random_state"}
 }
 best_params_summary.update({
     "dataset" : best_name,
@@ -512,7 +555,7 @@ best_params_summary.update({
     "cv_auc"  : round(all_probs[best_name]["cv_auc"], 4),
 })
 best_overall_path = os.path.join(
-    MODELS_DIR, "RF_Optuna_best_overall_params.json"
+    MODELS_DIR, "ET_Optuna_best_overall_params.json"
 )
 with open(best_overall_path, "w") as f:
     json.dump(best_params_summary, f, indent=4)
@@ -526,7 +569,7 @@ print(f"   Scaler           : {best_scaler_path}")
 print(f"   Best params JSON : {best_overall_path}")
 print(f"\n   Best hyperparameters:")
 for k, v in all_probs[best_name]["best_params"].items():
-    if k not in ("random_state", "n_jobs"):
+    if k not in {"n_jobs", "random_state"}:
         print(f"     {k:<25} : {v}")
 
 
@@ -539,7 +582,6 @@ heat_cols = ["Accuracy", "Sensitivity", "Specificity",
 heat_data = df_results.set_index("Dataset")[heat_cols]
 
 fig, ax = plt.subplots(figsize=(15, max(5, len(heat_data) * 0.7)))
-
 sns.heatmap(
     heat_data,
     annot=True, fmt=".4f", cmap="YlGn",
@@ -548,7 +590,7 @@ sns.heatmap(
     cbar_kws={"label": "Score"}
 )
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
+    f"Extra Trees + Optuna ({N_TRIALS} trials) — "
     f"Performance Metrics Across All 11 Datasets",
     fontsize=13, fontweight="bold", pad=15
 )
@@ -559,7 +601,7 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation=15,
                    ha="right", fontsize=10)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_metrics_heatmap.png"),
+                         "ET_Optuna_metrics_heatmap.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Metrics heatmap saved")
@@ -585,7 +627,7 @@ for i, (col, color) in enumerate(zip(plot_cols, colors)):
 
 ax.set_xlabel("Dataset", fontsize=12)
 ax.set_ylabel("Score", fontsize=12)
-ax.set_title("Random Forest + Optuna — All Metrics per Dataset",
+ax.set_title("Extra Trees + Optuna — All Metrics per Dataset",
              fontsize=14, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels(df_results["Dataset"],
@@ -596,7 +638,7 @@ ax.grid(axis="y", alpha=0.3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=0.8, alpha=0.6)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_grouped_bar_chart.png"),
+                         "ET_Optuna_grouped_bar_chart.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Grouped bar chart saved")
@@ -615,23 +657,25 @@ for (ds_name, data), color in zip(all_probs.items(), colors):
     auc_val     = roc_auc_score(data["y_test"], data["y_prob"])
     lw = 2.5 if ds_name == best_name else 1.2
     ls = "-"  if ds_name == best_name else "--"
-    ax.plot(fpr, tpr, color=color, linewidth=lw, linestyle=ls,
-            label=f"{ds_name} (AUC={auc_val:.4f})"
-                  + (" ★" if ds_name == best_name else ""))
+    bp = data["best_params"]
+    ax.plot(
+        fpr, tpr, color=color, linewidth=lw, linestyle=ls,
+        label=f"{ds_name} n={bp['n_estimators']} "
+              f"(AUC={auc_val:.4f})"
+              + (" ★" if ds_name == best_name else "")
+    )
 
-ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5,
-        label="Random")
+ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5, label="Random")
 ax.set_xlabel("False Positive Rate", fontsize=12)
 ax.set_ylabel("True Positive Rate", fontsize=12)
-ax.set_title("Random Forest + Optuna — ROC Curves for All Datasets",
+ax.set_title("Extra Trees + Optuna — ROC Curves for All Datasets",
              fontsize=14, fontweight="bold")
 ax.legend(fontsize=9, loc="lower right")
 ax.grid(alpha=0.3)
 ax.set_xlim([0, 1])
 ax.set_ylim([0, 1.02])
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_ROC_curves.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "ET_Optuna_ROC_curves.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ ROC curves saved")
@@ -650,15 +694,18 @@ disp = ConfusionMatrixDisplay(
     display_labels=["Non-AIP (0)", "AIP (1)"]
 )
 disp.plot(cmap="Blues", ax=ax, colorbar=False)
+bp = best_data["best_params"]
 ax.set_title(
     f"Confusion Matrix — Best: {best_name}\n"
+    f"n_estimators={bp['n_estimators']}  "
+    f"max_depth={bp['max_depth']}\n"
     f"(Test AUC={best_auc:.4f}  "
-    f"CV AUC={all_probs[best_name]['cv_auc']:.4f})",
-    fontsize=11, fontweight="bold"
+    f"CV AUC={best_data['cv_auc']:.4f})",
+    fontsize=10, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         f"RF_Optuna_confusion_matrix_{best_name}.png"),
+                         f"ET_Optuna_confusion_matrix_{best_name}.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print(f"✅ Confusion matrix saved ({best_name})")
@@ -676,30 +723,38 @@ width     = 0.35
 
 ax.barh(x + width / 2, sorted_df["AUC"].values, width,
         label="Test AUC",
-        color=["#2ecc71" if n == best_name else "#3498db"
+        color=["#2ecc71" if n == best_name else "#27ae60"
                for n in sorted_df["Dataset"]],
         edgecolor="white", alpha=0.85)
 ax.barh(x - width / 2, sorted_df["CV_AUC"].values, width,
         label="CV AUC",
-        color=["#27ae60" if n == best_name else "#2980b9"
+        color=["#1e8449" if n == best_name else "#196f3d"
                for n in sorted_df["Dataset"]],
         edgecolor="white", alpha=0.65)
+
+for i, ds_name in enumerate(sorted_df["Dataset"]):
+    bp  = all_probs[ds_name]["best_params"]
+    auc = sorted_df.loc[sorted_df["Dataset"] == ds_name,
+                        "AUC"].values[0]
+    ax.text(auc + 0.005, i + width / 2,
+            f"{auc:.4f}  n={bp['n_estimators']}  "
+            f"d={bp['max_depth']}",
+            va="center", fontsize=9)
 
 ax.set_yticks(x)
 ax.set_yticklabels(sorted_df["Dataset"], fontsize=10)
 ax.axvline(0.5, color="grey", linestyle="--", linewidth=1, alpha=0.7)
 ax.set_xlabel("AUC Score", fontsize=12)
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
+    f"Extra Trees + Optuna ({N_TRIALS} trials) — "
     f"Test AUC vs CV AUC Ranking",
     fontsize=13, fontweight="bold"
 )
-ax.set_xlim(0, 1.05)
+ax.set_xlim(0, 1.22)
 ax.legend(fontsize=11)
 ax.grid(axis="x", alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_AUC_ranking.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "ET_Optuna_AUC_ranking.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ AUC ranking chart saved")
@@ -707,7 +762,6 @@ print("✅ AUC ranking chart saved")
 
 # ============================================================
 #   CELL 14 — Visualization 6: Optimization History
-#             AUC improvement over 100 trials per dataset
 # ============================================================
 
 fig, axes = plt.subplots(3, 4, figsize=(20, 14), sharey=False)
@@ -736,8 +790,16 @@ for idx, (ds_name, study) in enumerate(all_studies.items()):
     ax.axhline(max(trial_vals), color="#e74c3c",
                linestyle="--", linewidth=0.8, alpha=0.5)
 
+    bp = all_probs.get(ds_name, {}).get("best_params", {})
+    if bp:
+        ax.set_xlabel(
+            f"n={bp.get('n_estimators','?')}  "
+            f"d={bp.get('max_depth','?')}  "
+            f"feat={bp.get('max_features','?')}",
+            fontsize=8
+        )
+
     ax.set_title(ds_name, fontsize=11, fontweight="bold")
-    ax.set_xlabel("Trial Number", fontsize=9)
     ax.set_ylabel("CV AUC", fontsize=9)
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
@@ -747,20 +809,20 @@ for idx in range(len(all_studies), len(axes)):
     axes[idx].set_visible(False)
 
 plt.suptitle(
-    f"Optuna Optimization History — Random Forest "
+    f"Optuna Optimization History — Extra Trees "
     f"({N_TRIALS} trials per dataset)",
     fontsize=14, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_optimization_history.png"),
+                         "ET_Optuna_optimization_history.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Optimization history plot saved")
 
 
 # ============================================================
-#   CELL 15 — Visualization 7: Parameter Importance
+#   CELL 15 — Visualization 7: Parameter Importance (Fanova)
 # ============================================================
 
 try:
@@ -772,7 +834,8 @@ try:
     param_names  = list(importances.keys())
     param_values = list(importances.values())
     clean_names  = [
-        n.replace("max_depth_none", "max_depth (None?)")
+        n.replace("max_depth_none",      "max_depth (None?)")
+         .replace("max_leaf_nodes_none", "max_leaf_nodes (None?)")
         for n in param_names
     ]
 
@@ -795,7 +858,7 @@ try:
     plt.tight_layout()
     plt.savefig(
         os.path.join(FIGURES_DIR,
-                     f"RF_Optuna_param_importance_{best_name}.png"),
+                     f"ET_Optuna_param_importance_{best_name}.png"),
         dpi=150, bbox_inches="tight"
     )
     plt.show()
@@ -807,7 +870,9 @@ except Exception as e:
 
 # ============================================================
 #   CELL 16 — Visualization 8: Feature Importance (Best Model)
-#             RF built-in feature importances from best model
+#             Extra Trees built-in feature importances —
+#             more uniform / stable than Random Forest due
+#             to higher randomisation in threshold selection
 # ============================================================
 
 importances = best_model.feature_importances_
@@ -824,16 +889,19 @@ ax.set_xticklabels(top_labels, rotation=45, ha="right", fontsize=8)
 ax.set_xlabel("Feature Index", fontsize=12)
 ax.set_ylabel("Importance (Mean Decrease in Impurity)", fontsize=12)
 ax.set_title(
-    f"Random Forest — Top {n_top} Feature Importances\n"
+    f"Extra Trees — Top {n_top} Feature Importances\n"
     f"Best Dataset: {best_name}  "
-    f"(n_estimators={all_probs[best_name]['best_params']['n_estimators']})",
+    f"(n_estimators="
+    f"{all_probs[best_name]['best_params']['n_estimators']}  "
+    f"bootstrap="
+    f"{all_probs[best_name]['best_params']['bootstrap']})",
     fontsize=13, fontweight="bold"
 )
 ax.grid(axis="y", alpha=0.3)
 plt.tight_layout()
 plt.savefig(
     os.path.join(FIGURES_DIR,
-                 f"RF_Optuna_feature_importance_{best_name}.png"),
+                 f"ET_Optuna_feature_importance_{best_name}.png"),
     dpi=150, bbox_inches="tight"
 )
 plt.show()
@@ -841,7 +909,58 @@ print(f"✅ Feature importance plot saved ({best_name})")
 
 
 # ============================================================
-#   CELL 17 — Best Parameters Table (All Datasets)
+#   CELL 17 — ET vs RF Optuna AUC Comparison
+#             Loads RF Optuna results if available
+# ============================================================
+
+rf_summary_path = (
+    "/content/drive/MyDrive/Colab Notebooks/AIP Prediction"
+    "/results/rf_optuna/RF_Optuna_all_results_summary.csv"
+)
+
+if os.path.exists(rf_summary_path):
+    df_rf     = pd.read_csv(rf_summary_path).set_index("Dataset")
+    common_ds = [d for d in df_results["Dataset"]
+                 if d in df_rf.index]
+
+    et_aucs = df_results.set_index("Dataset").loc[common_ds, "AUC"]
+    rf_aucs = df_rf.loc[common_ds, "AUC"]
+
+    x     = np.arange(len(common_ds))
+    width = 0.35
+
+    fig, ax = plt.subplots(figsize=(14, 5))
+    ax.bar(x - width / 2, et_aucs.values, width,
+           label="Extra Trees (Optuna)",
+           color="#27ae60", alpha=0.85, edgecolor="white")
+    ax.bar(x + width / 2, rf_aucs.values, width,
+           label="Random Forest (Optuna)",
+           color="#3498db", alpha=0.85, edgecolor="white")
+
+    ax.set_xticks(x)
+    ax.set_xticklabels(common_ds, rotation=20, ha="right", fontsize=10)
+    ax.set_ylabel("AUC Score", fontsize=12)
+    ax.set_ylim(0, 1.08)
+    ax.set_title("AUC Comparison: Extra Trees vs Random Forest (Optuna Tuned)",
+                 fontsize=13, fontweight="bold")
+    ax.legend(fontsize=11)
+    ax.grid(axis="y", alpha=0.3)
+    ax.axhline(0.5, color="grey", linestyle="--",
+               linewidth=0.8, alpha=0.6)
+
+    plt.tight_layout()
+    plt.savefig(os.path.join(FIGURES_DIR,
+                             "ET_vs_RF_Optuna_AUC_comparison.png"),
+                dpi=150, bbox_inches="tight")
+    plt.show()
+    print("✅ ET vs RF (Optuna) comparison plot saved")
+else:
+    print("ℹ️  RF Optuna results not found — skipping ET vs RF comparison")
+    print("   Run RF_Optuna_classifier_all_datasets.py first")
+
+
+# ============================================================
+#   CELL 18 — Best Parameters Table (All Datasets)
 # ============================================================
 
 print("\n── Best Hyperparameters per Dataset ──────────────────────")
@@ -850,7 +969,7 @@ for ds_name, data in all_probs.items():
     row = {"Dataset": ds_name}
     row.update({
         k: v for k, v in data["best_params"].items()
-        if k not in ("random_state", "n_jobs")
+        if k not in {"n_jobs", "random_state"}
     })
     row["CV_AUC"]   = round(data["cv_auc"], 4)
     row["Test_AUC"] = round(
@@ -862,21 +981,21 @@ df_params = pd.DataFrame(param_rows)
 print(df_params.to_string(index=False))
 
 params_table_path = os.path.join(
-    PARAMS_DIR, "RF_Optuna_all_best_params.csv"
+    PARAMS_DIR, "ET_Optuna_all_best_params.csv"
 )
 df_params.to_csv(params_table_path, index=False)
 print(f"\n✅ Best params table saved → {params_table_path}")
 
 
 # ============================================================
-#   CELL 18 — Final Summary
+#   CELL 19 — Final Summary
 # ============================================================
 
 best_row    = df_results[df_results["Dataset"] == best_name].iloc[0]
 best_params = all_probs[best_name]["best_params"]
 
 print("=" * 65)
-print("  RANDOM FOREST + OPTUNA — FINAL SUMMARY")
+print("  EXTRA TREES + OPTUNA — FINAL SUMMARY")
 print("=" * 65)
 print(f"\n  Results saved to       : {RESULTS_DIR}")
 print(f"  Figures saved to       : {FIGURES_DIR}")
@@ -903,13 +1022,18 @@ print(f"     F1 Score       : {best_row['F1_Score']:.4f}")
 print(f"     MCC            : {best_row['MCC']:.4f}")
 print(f"\n  Best hyperparameters ({best_name}):")
 for k, v in best_params.items():
-    if k not in ("random_state", "n_jobs"):
+    if k not in {"n_jobs", "random_state"}:
         print(f"     {k:<25} : {v}")
 print(f"\n  Optuna settings:")
 print(f"     Sampler        : TPE (Tree-structured Parzen Estimator)")
 print(f"     Trials         : {N_TRIALS}")
 print(f"     CV folds       : {N_CV_FOLDS} (StratifiedKFold)")
 print(f"     Objective      : Maximise mean CV AUC")
+print(f"\n  Extra Trees vs RF (Optuna):")
+print(f"     ✅ Faster training — random thresholds, no bootstrap default")
+print(f"     ✅ Lower variance — more regularisation via randomness")
+print(f"     ✅ max_leaf_nodes tuned (extra structural regularisation)")
+print(f"     ✅ ET vs RF Optuna comparison auto-generated if RF run first")
 print(f"\n  Saved files:")
 print(f"     Per-dataset JSON params  : {PARAMS_DIR}/")
 print(f"     All-params CSV           : {params_table_path}")

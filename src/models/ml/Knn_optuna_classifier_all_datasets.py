@@ -24,7 +24,7 @@ import optuna
 from optuna.samplers import TPESampler
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.model_selection import (
     train_test_split, StratifiedKFold, cross_val_score
 )
@@ -45,17 +45,17 @@ print(f"   Optuna version : {optuna.__version__}")
 
 # DRIVE DATA PATH (ONLY for Google Colab, ignored in local runs)
 # FEATURE_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/data/features"
-# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/rf_optuna"
-# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna/best_params"
+# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/knn_optuna"
+# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/knn_optuna"
+# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/knn_optuna"
+# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/knn_optuna/best_params"
 
 # LOCAL DATA PATH (ONLY for local runs, ignored in Google Colab)
 FEATURE_DIR  = "../../../data/features"
-RESULTS_DIR  = "../../../results/models/rf_optuna"
-FIGURES_DIR  = "../../../results/figures/models/rf_optuna"
-MODELS_DIR   = "../../../results/models/rf_optuna"
-PARAMS_DIR   = "../../../results/models/rf_optuna/best_params"
+RESULTS_DIR  = "../../../results/models/knn_optuna"
+FIGURES_DIR  = "../../../results/figures/models/knn_optuna"
+MODELS_DIR   = "../../../results/models/knn_optuna"
+PARAMS_DIR   = "../../../results/models/knn_optuna/best_params"
 
 os.makedirs(RESULTS_DIR,  exist_ok=True)
 os.makedirs(FIGURES_DIR,  exist_ok=True)
@@ -89,30 +89,38 @@ RANDOM_STATE = 42
 # ── Search space description ─────────────────────────────────
 #
 #  Parameters tuned by Optuna:
-#    n_estimators      : number of trees in the forest
-#    max_depth         : max depth per tree (or None = unlimited)
-#    min_samples_split : min samples to split a node
-#    min_samples_leaf  : min samples at a leaf node
-#    max_features      : features considered at each split
-#                        "sqrt" → √n_features (classification default)
-#                        "log2" → log2(n_features)
-#                        float  → fraction of features (0.1–1.0)
-#    criterion         : split quality measure (gini / entropy / log_loss)
-#    bootstrap         : whether to use bootstrap samples per tree
-#    class_weight      : handles 1:1.5 AIP/non-AIP imbalance
-#    max_samples       : fraction of samples per tree (only if bootstrap=True)
-#    min_impurity_decrease: split only if impurity decrease >= this value
+#    n_neighbors  : number of nearest neighbours [1, 30]
+#                   Optuna explores beyond the simple [1,3,5..15]
+#                   manual sweep — finds optimal value precisely
+#    weights      : voting strategy
+#                   "uniform"  — all neighbours equal
+#                   "distance" — closer neighbours count more ✅
+#    metric       : distance function
+#                   "euclidean" — L2, standard
+#                   "manhattan" — L1, robust to outliers
+#                   "chebyshev" — L∞, max component distance
+#                   "minkowski" — generalised Lp (p tuned separately)
+#                   "cosine"    — angle-based, good for PLM embeddings
+#    p            : Minkowski power (only when metric="minkowski")
+#                   p=1 → manhattan, p=2 → euclidean
+#    algorithm    : nearest neighbour search structure
+#                   "auto"     — sklearn picks best
+#                   "ball_tree"— good for low-dim features
+#                   "kd_tree"  — good for low-dim features
+#                   "brute"    — exact, works for any metric
+#                   Note: "ball_tree"/"kd_tree" incompatible with
+#                   "cosine" metric → handled conditionally
+#    leaf_size    : ball_tree/kd_tree leaf size [10, 100]
+#                   only relevant for ball_tree and kd_tree
 #
 SEARCH_SPACE = {
-    "n_estimators"        : "int [50, 500]",
-    "max_depth"           : "int [3, 30] or None",
-    "min_samples_split"   : "int [2, 20]",
-    "min_samples_leaf"    : "int [1, 20]",
-    "max_features"        : ["sqrt", "log2", 0.3, 0.5, 0.7, 1.0],
-    "criterion"           : ["gini", "entropy", "log_loss"],
-    "bootstrap"           : [True, False],
-    "class_weight"        : ["balanced", "balanced_subsample", None],
-    "min_impurity_decrease": "float [0.0, 0.05]",
+    "n_neighbors" : "int [1, 30]",
+    "weights"     : ["uniform", "distance"],
+    "metric"      : ["euclidean", "manhattan", "chebyshev",
+                     "minkowski", "cosine"],
+    "p"           : "int [1, 5]  (only when metric=minkowski)",
+    "algorithm"   : "auto / ball_tree / kd_tree / brute",
+    "leaf_size"   : "int [10, 100]  (ball_tree / kd_tree only)",
 }
 
 print(f"✅ Config loaded")
@@ -122,7 +130,7 @@ print(f"   CV folds    : {N_CV_FOLDS}")
 print(f"   Train/Test  : {int((1-TEST_SIZE)*100)}% / {int(TEST_SIZE*100)}%")
 print(f"\n   Search space:")
 for k, v in SEARCH_SPACE.items():
-    print(f"     {k:<25} : {v}")
+    print(f"     {k:<14} : {v}")
 
 
 # ============================================================
@@ -185,67 +193,58 @@ def load_dataset(csv_path):
 
 def make_objective(X_train, y_train, n_folds, seed):
     """
-    Returns an Optuna objective function closed over the training
-    data. Each trial samples a different hyperparameter combination
-    and evaluates it via stratified k-fold CV on the training set.
+    Returns an Optuna objective function for KNN.
 
-    Objective: maximise mean AUC across k folds.
+    Objective: maximise mean AUC across stratified k-fold CV
+    on the training set.
 
-    Key RF-specific design decisions:
-      - max_depth: sampled as int OR None via conditional encoding
-      - max_features: includes both categorical strings and floats
-      - max_samples: only relevant when bootstrap=True, so it is
-        conditionally sampled to avoid wasted trials
-      - n_jobs=-1 in CV for parallelism
+    KNN-specific design decisions:
+      - metric + algorithm are sampled conditionally:
+          cosine metric requires algorithm="brute"
+          (ball_tree and kd_tree don't support cosine)
+      - p (Minkowski power) only sampled when metric="minkowski"
+          avoids meaningless p values for other metrics
+      - leaf_size only relevant for ball_tree / kd_tree
+      - n_jobs=-1 for parallel distance computation
     """
     def objective(trial):
 
-        # ── max_depth: None or int ───────────────────────────
-        use_none_depth = trial.suggest_categorical(
-            "max_depth_none", [True, False]
+        metric = trial.suggest_categorical(
+            "metric",
+            ["euclidean", "manhattan", "chebyshev",
+             "minkowski", "cosine"]
         )
-        max_depth = None if use_none_depth else \
-            trial.suggest_int("max_depth", 3, 30)
 
-        # ── bootstrap and conditional max_samples ────────────
-        bootstrap = trial.suggest_categorical(
-            "bootstrap", [True, False]
-        )
-        max_samples = trial.suggest_float(
-            "max_samples", 0.5, 1.0
-        ) if bootstrap else None
+        # ── algorithm: cosine requires brute ─────────────────
+        if metric == "cosine":
+            algorithm = "brute"
+        else:
+            algorithm = trial.suggest_categorical(
+                "algorithm",
+                ["auto", "ball_tree", "kd_tree", "brute"]
+            )
+
+        # ── p: only for minkowski ─────────────────────────────
+        p = trial.suggest_int("p", 1, 5) \
+            if metric == "minkowski" else 2
+
+        # ── leaf_size: only for ball_tree / kd_tree ───────────
+        leaf_size = trial.suggest_int("leaf_size", 10, 100) \
+            if algorithm in ("ball_tree", "kd_tree") else 30
 
         params = {
-            "n_estimators"        : trial.suggest_int(
-                "n_estimators", 50, 500
+            "n_neighbors": trial.suggest_int("n_neighbors", 1, 30),
+            "weights"    : trial.suggest_categorical(
+                "weights", ["uniform", "distance"]
             ),
-            "criterion"           : trial.suggest_categorical(
-                "criterion", ["gini", "entropy", "log_loss"]
-            ),
-            "max_depth"           : max_depth,
-            "min_samples_split"   : trial.suggest_int(
-                "min_samples_split", 2, 20
-            ),
-            "min_samples_leaf"    : trial.suggest_int(
-                "min_samples_leaf", 1, 20
-            ),
-            "max_features"        : trial.suggest_categorical(
-                "max_features", ["sqrt", "log2", 0.3, 0.5, 0.7, 1.0]
-            ),
-            "bootstrap"           : bootstrap,
-            "max_samples"         : max_samples,
-            "class_weight"        : trial.suggest_categorical(
-                "class_weight",
-                ["balanced", "balanced_subsample", None]
-            ),
-            "min_impurity_decrease": trial.suggest_float(
-                "min_impurity_decrease", 0.0, 0.05
-            ),
-            "n_jobs"              : -1,
-            "random_state"        : seed,
+            "metric"    : metric,
+            "algorithm" : algorithm,
+            "p"         : p,
+            "leaf_size" : leaf_size,
+            "n_jobs"    : -1,
         }
 
-        clf = RandomForestClassifier(**params)
+        clf = KNeighborsClassifier(**params)
         cv  = StratifiedKFold(
             n_splits=n_folds, shuffle=True, random_state=seed
         )
@@ -258,28 +257,31 @@ def make_objective(X_train, y_train, n_folds, seed):
     return objective
 
 
-def extract_best_params(trial_params, random_state):
+def extract_best_params(trial_params):
     """
-    Reconstruct the final RF parameter dict from Optuna trial
-    params, handling conditional encodings for max_depth and
-    max_samples.
+    Reconstruct the final KNN parameter dict from Optuna trial
+    params. Applies the same conditional logic used in the
+    objective — ensures algorithm / p / leaf_size are consistent
+    with the chosen metric.
     """
     params = trial_params.copy()
 
-    # max_depth
-    use_none = params.pop("max_depth_none", True)
-    if not use_none:
-        params["max_depth"] = params.get("max_depth", None)
-    else:
-        params.pop("max_depth", None)
-        params["max_depth"] = None
+    metric    = params.get("metric", "euclidean")
+    algorithm = params.get("algorithm", "auto")
 
-    # max_samples only valid when bootstrap=True
-    if not params.get("bootstrap", True):
-        params["max_samples"] = None
+    # cosine always requires brute
+    if metric == "cosine":
+        params["algorithm"] = "brute"
 
-    params["n_jobs"]       = -1
-    params["random_state"] = random_state
+    # p only meaningful for minkowski
+    if metric != "minkowski":
+        params["p"] = 2
+
+    # leaf_size only relevant for ball_tree / kd_tree
+    if algorithm not in ("ball_tree", "kd_tree"):
+        params["leaf_size"] = 30
+
+    params["n_jobs"] = -1
     return params
 
 
@@ -296,7 +298,7 @@ all_probs     = {}
 all_studies   = {}
 
 print("=" * 65)
-print("  Random Forest + Optuna — Training on 11 Datasets")
+print("  KNN + Optuna — Training on 11 Datasets")
 print(f"  Trials per dataset : {N_TRIALS}")
 print(f"  CV folds           : {N_CV_FOLDS} (StratifiedKFold)")
 print(f"  Sampler            : TPE (Tree-structured Parzen Estimator)")
@@ -329,6 +331,7 @@ for ds_name, csv_file in DATASETS.items():
           f"Test: {len(X_test)} samples")
 
     # ── Scale features ───────────────────────────────────────
+    # ⚠️ Critical for KNN — distances are meaningless without scaling
     scaler  = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test  = scaler.transform(X_test)
@@ -339,7 +342,7 @@ for ds_name, csv_file in DATASETS.items():
     study = optuna.create_study(
         direction  = "maximize",
         sampler    = TPESampler(seed=OPTUNA_SEED),
-        study_name = f"RF_{ds_name}",
+        study_name = f"KNN_{ds_name}",
     )
     study.optimize(
         make_objective(X_train, y_train, N_CV_FOLDS, RANDOM_STATE),
@@ -350,19 +353,17 @@ for ds_name, csv_file in DATASETS.items():
     all_studies[ds_name] = study
 
     # ── Extract best parameters ───────────────────────────────
-    best_params = extract_best_params(
-        study.best_trial.params, RANDOM_STATE
-    )
-    cv_auc = study.best_trial.value
+    best_params = extract_best_params(study.best_trial.params)
+    cv_auc      = study.best_trial.value
 
     print(f"\n  ── Best Parameters (trial #{study.best_trial.number}) ──")
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
-            print(f"     {k:<25} : {v}")
-    print(f"     {'CV AUC':<25} : {cv_auc:.4f}")
+        if k != "n_jobs":
+            print(f"     {k:<14} : {v}")
+    print(f"     {'CV AUC':<14} : {cv_auc:.4f}")
 
     # ── Train final model with best parameters ────────────────
-    clf = RandomForestClassifier(**best_params)
+    clf = KNeighborsClassifier(**best_params)
     clf.fit(X_train, y_train)
 
     # ── Predict ──────────────────────────────────────────────
@@ -379,7 +380,7 @@ for ds_name, csv_file in DATASETS.items():
     metrics["Test_N"]     = len(X_test)
 
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
+        if k != "n_jobs":
             metrics[f"param_{k}"] = v
     all_results.append(metrics)
 
@@ -402,15 +403,13 @@ for ds_name, csv_file in DATASETS.items():
         "prob_negative": 1 - y_prob,
     })
     prob_path = os.path.join(
-        RESULTS_DIR, f"{ds_name}_RF_Optuna_probabilities.csv"
+        RESULTS_DIR, f"{ds_name}_KNN_Optuna_probabilities.csv"
     )
     df_probs.to_csv(prob_path, index=False)
 
     # ── Save best params as JSON ─────────────────────────────
     params_to_save = {
-        k: (str(v) if v is None else v)
-        for k, v in best_params.items()
-        if k not in ("random_state", "n_jobs")
+        k: v for k, v in best_params.items() if k != "n_jobs"
     }
     params_to_save.update({
         "cv_auc"     : round(cv_auc, 4),
@@ -425,7 +424,7 @@ for ds_name, csv_file in DATASETS.items():
         "dataset"    : ds_name,
     })
     param_path = os.path.join(
-        PARAMS_DIR, f"{ds_name}_RF_best_params.json"
+        PARAMS_DIR, f"{ds_name}_KNN_best_params.json"
     )
     with open(param_path, "w") as f:
         json.dump(params_to_save, f, indent=4)
@@ -470,18 +469,18 @@ df_results = pd.DataFrame(all_results)[metric_cols].sort_values(
 
 df_results.index += 1
 
-print("\n── RF + Optuna Performance Summary (sorted by Test AUC) ──")
+print("\n── KNN + Optuna Performance Summary (sorted by Test AUC) ──")
 print(df_results.to_string())
 
 summary_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_all_results_summary.csv"
+    RESULTS_DIR, "KNN_Optuna_all_results_summary.csv"
 )
 df_results.to_csv(summary_path, index=True, index_label="Rank")
 print(f"\n✅ Summary saved → {summary_path}")
 
 df_full   = pd.DataFrame(all_results)
 full_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_full_results_with_params.csv"
+    RESULTS_DIR, "KNN_Optuna_full_results_with_params.csv"
 )
 df_full.to_csv(full_path, index=False)
 print(f"✅ Full results (with params) saved → {full_path}")
@@ -492,19 +491,18 @@ print(f"✅ Full results (with params) saved → {full_path}")
 # ============================================================
 
 best_model_path  = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_model_{best_name}.joblib"
+    MODELS_DIR, f"KNN_Optuna_best_model_{best_name}.joblib"
 )
 best_scaler_path = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_scaler_{best_name}.joblib"
+    MODELS_DIR, f"KNN_Optuna_best_scaler_{best_name}.joblib"
 )
 
 joblib.dump(best_model,  best_model_path)
 joblib.dump(best_scaler, best_scaler_path)
 
 best_params_summary = {
-    k: (str(v) if v is None else v)
-    for k, v in all_probs[best_name]["best_params"].items()
-    if k not in ("random_state", "n_jobs")
+    k: v for k, v in all_probs[best_name]["best_params"].items()
+    if k != "n_jobs"
 }
 best_params_summary.update({
     "dataset" : best_name,
@@ -512,7 +510,7 @@ best_params_summary.update({
     "cv_auc"  : round(all_probs[best_name]["cv_auc"], 4),
 })
 best_overall_path = os.path.join(
-    MODELS_DIR, "RF_Optuna_best_overall_params.json"
+    MODELS_DIR, "KNN_Optuna_best_overall_params.json"
 )
 with open(best_overall_path, "w") as f:
     json.dump(best_params_summary, f, indent=4)
@@ -526,8 +524,8 @@ print(f"   Scaler           : {best_scaler_path}")
 print(f"   Best params JSON : {best_overall_path}")
 print(f"\n   Best hyperparameters:")
 for k, v in all_probs[best_name]["best_params"].items():
-    if k not in ("random_state", "n_jobs"):
-        print(f"     {k:<25} : {v}")
+    if k != "n_jobs":
+        print(f"     {k:<14} : {v}")
 
 
 # ============================================================
@@ -539,7 +537,6 @@ heat_cols = ["Accuracy", "Sensitivity", "Specificity",
 heat_data = df_results.set_index("Dataset")[heat_cols]
 
 fig, ax = plt.subplots(figsize=(15, max(5, len(heat_data) * 0.7)))
-
 sns.heatmap(
     heat_data,
     annot=True, fmt=".4f", cmap="YlGn",
@@ -548,7 +545,7 @@ sns.heatmap(
     cbar_kws={"label": "Score"}
 )
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
+    f"KNN + Optuna ({N_TRIALS} trials) — "
     f"Performance Metrics Across All 11 Datasets",
     fontsize=13, fontweight="bold", pad=15
 )
@@ -559,7 +556,7 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation=15,
                    ha="right", fontsize=10)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_metrics_heatmap.png"),
+                         "KNN_Optuna_metrics_heatmap.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Metrics heatmap saved")
@@ -585,7 +582,7 @@ for i, (col, color) in enumerate(zip(plot_cols, colors)):
 
 ax.set_xlabel("Dataset", fontsize=12)
 ax.set_ylabel("Score", fontsize=12)
-ax.set_title("Random Forest + Optuna — All Metrics per Dataset",
+ax.set_title("KNN + Optuna — All Metrics per Dataset",
              fontsize=14, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels(df_results["Dataset"],
@@ -596,7 +593,7 @@ ax.grid(axis="y", alpha=0.3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=0.8, alpha=0.6)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_grouped_bar_chart.png"),
+                         "KNN_Optuna_grouped_bar_chart.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Grouped bar chart saved")
@@ -615,23 +612,25 @@ for (ds_name, data), color in zip(all_probs.items(), colors):
     auc_val     = roc_auc_score(data["y_test"], data["y_prob"])
     lw = 2.5 if ds_name == best_name else 1.2
     ls = "-"  if ds_name == best_name else "--"
-    ax.plot(fpr, tpr, color=color, linewidth=lw, linestyle=ls,
-            label=f"{ds_name} (AUC={auc_val:.4f})"
-                  + (" ★" if ds_name == best_name else ""))
+    bp = data["best_params"]
+    ax.plot(
+        fpr, tpr, color=color, linewidth=lw, linestyle=ls,
+        label=f"{ds_name} k={bp['n_neighbors']} "
+              f"{bp['metric'][:4]} (AUC={auc_val:.4f})"
+              + (" ★" if ds_name == best_name else "")
+    )
 
-ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5,
-        label="Random")
+ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5, label="Random")
 ax.set_xlabel("False Positive Rate", fontsize=12)
 ax.set_ylabel("True Positive Rate", fontsize=12)
-ax.set_title("Random Forest + Optuna — ROC Curves for All Datasets",
+ax.set_title("KNN + Optuna — ROC Curves for All Datasets",
              fontsize=14, fontweight="bold")
-ax.legend(fontsize=9, loc="lower right")
+ax.legend(fontsize=8, loc="lower right")
 ax.grid(alpha=0.3)
 ax.set_xlim([0, 1])
 ax.set_ylim([0, 1.02])
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_ROC_curves.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "KNN_Optuna_ROC_curves.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ ROC curves saved")
@@ -650,15 +649,18 @@ disp = ConfusionMatrixDisplay(
     display_labels=["Non-AIP (0)", "AIP (1)"]
 )
 disp.plot(cmap="Blues", ax=ax, colorbar=False)
+bp = best_data["best_params"]
 ax.set_title(
     f"Confusion Matrix — Best: {best_name}\n"
+    f"k={bp['n_neighbors']}  metric={bp['metric']}  "
+    f"weights={bp['weights']}\n"
     f"(Test AUC={best_auc:.4f}  "
-    f"CV AUC={all_probs[best_name]['cv_auc']:.4f})",
-    fontsize=11, fontweight="bold"
+    f"CV AUC={best_data['cv_auc']:.4f})",
+    fontsize=10, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         f"RF_Optuna_confusion_matrix_{best_name}.png"),
+                         f"KNN_Optuna_confusion_matrix_{best_name}.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print(f"✅ Confusion matrix saved ({best_name})")
@@ -666,7 +668,7 @@ print(f"✅ Confusion matrix saved ({best_name})")
 
 # ============================================================
 #   CELL 13 — Visualization 5: AUC Ranking
-#             Shows Test AUC and CV AUC side by side
+#             Shows Test AUC and CV AUC with best k + metric
 # ============================================================
 
 fig, ax = plt.subplots(figsize=(13, 5))
@@ -685,21 +687,28 @@ ax.barh(x - width / 2, sorted_df["CV_AUC"].values, width,
                for n in sorted_df["Dataset"]],
         edgecolor="white", alpha=0.65)
 
+# Label bars with k and metric used
+for i, ds_name in enumerate(sorted_df["Dataset"]):
+    bp  = all_probs[ds_name]["best_params"]
+    auc = sorted_df.loc[sorted_df["Dataset"] == ds_name,
+                        "AUC"].values[0]
+    ax.text(auc + 0.005, i + width / 2,
+            f"{auc:.4f}  k={bp['n_neighbors']} {bp['metric'][:4]}",
+            va="center", fontsize=9)
+
 ax.set_yticks(x)
 ax.set_yticklabels(sorted_df["Dataset"], fontsize=10)
 ax.axvline(0.5, color="grey", linestyle="--", linewidth=1, alpha=0.7)
 ax.set_xlabel("AUC Score", fontsize=12)
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
-    f"Test AUC vs CV AUC Ranking",
+    f"KNN + Optuna ({N_TRIALS} trials) — Test AUC vs CV AUC Ranking",
     fontsize=13, fontweight="bold"
 )
-ax.set_xlim(0, 1.05)
+ax.set_xlim(0, 1.18)
 ax.legend(fontsize=11)
 ax.grid(axis="x", alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_AUC_ranking.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "KNN_Optuna_AUC_ranking.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ AUC ranking chart saved")
@@ -707,7 +716,6 @@ print("✅ AUC ranking chart saved")
 
 # ============================================================
 #   CELL 14 — Visualization 6: Optimization History
-#             AUC improvement over 100 trials per dataset
 # ============================================================
 
 fig, axes = plt.subplots(3, 4, figsize=(20, 14), sharey=False)
@@ -736,8 +744,17 @@ for idx, (ds_name, study) in enumerate(all_studies.items()):
     ax.axhline(max(trial_vals), color="#e74c3c",
                linestyle="--", linewidth=0.8, alpha=0.5)
 
+    # Annotate best k and metric
+    bp = all_probs.get(ds_name, {}).get("best_params", {})
+    if bp:
+        ax.set_xlabel(
+            f"k={bp.get('n_neighbors','?')}  "
+            f"metric={bp.get('metric','?')}  "
+            f"weights={bp.get('weights','?')}",
+            fontsize=8
+        )
+
     ax.set_title(ds_name, fontsize=11, fontweight="bold")
-    ax.set_xlabel("Trial Number", fontsize=9)
     ax.set_ylabel("CV AUC", fontsize=9)
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
@@ -747,20 +764,20 @@ for idx in range(len(all_studies), len(axes)):
     axes[idx].set_visible(False)
 
 plt.suptitle(
-    f"Optuna Optimization History — Random Forest "
+    f"Optuna Optimization History — KNN "
     f"({N_TRIALS} trials per dataset)",
     fontsize=14, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_optimization_history.png"),
+                         "KNN_Optuna_optimization_history.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Optimization history plot saved")
 
 
 # ============================================================
-#   CELL 15 — Visualization 7: Parameter Importance
+#   CELL 15 — Visualization 7: Parameter Importance (Fanova)
 # ============================================================
 
 try:
@@ -771,14 +788,10 @@ try:
 
     param_names  = list(importances.keys())
     param_values = list(importances.values())
-    clean_names  = [
-        n.replace("max_depth_none", "max_depth (None?)")
-        for n in param_names
-    ]
 
-    fig, ax = plt.subplots(figsize=(11, 5))
-    bars = ax.barh(clean_names[::-1], param_values[::-1],
-                   color="#27ae60", edgecolor="white", alpha=0.85)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    bars = ax.barh(param_names[::-1], param_values[::-1],
+                   color="#3498db", edgecolor="white", alpha=0.85)
     for bar, val in zip(bars, param_values[::-1]):
         ax.text(bar.get_width() + 0.005,
                 bar.get_y() + bar.get_height() / 2,
@@ -795,7 +808,7 @@ try:
     plt.tight_layout()
     plt.savefig(
         os.path.join(FIGURES_DIR,
-                     f"RF_Optuna_param_importance_{best_name}.png"),
+                     f"KNN_Optuna_param_importance_{best_name}.png"),
         dpi=150, bbox_inches="tight"
     )
     plt.show()
@@ -806,38 +819,65 @@ except Exception as e:
 
 
 # ============================================================
-#   CELL 16 — Visualization 8: Feature Importance (Best Model)
-#             RF built-in feature importances from best model
+#   CELL 16 — Visualization 8: Metric Distribution per Dataset
+#             KNN has no built-in feature importance like tree
+#             models. Instead we show per-dataset best-params
+#             summary as an annotated table plot — unique to KNN
 # ============================================================
 
-importances = best_model.feature_importances_
-n_top       = min(30, len(importances))
-top_idx     = np.argsort(importances)[::-1][:n_top]
-top_imp     = importances[top_idx]
-top_labels  = [f"F{i}" for i in top_idx]
+param_display = []
+for ds_name, data in all_probs.items():
+    bp  = data["best_params"]
+    row = {
+        "Dataset" : ds_name,
+        "k"       : bp.get("n_neighbors", "?"),
+        "weights" : bp.get("weights", "?"),
+        "metric"  : bp.get("metric", "?"),
+        "algorithm": bp.get("algorithm", "?"),
+        "CV AUC"  : f"{data['cv_auc']:.4f}",
+        "Test AUC": f"{roc_auc_score(data['y_test'], data['y_prob']):.4f}",
+    }
+    param_display.append(row)
 
-fig, ax = plt.subplots(figsize=(14, 5))
-ax.bar(range(n_top), top_imp, color="#27ae60",
-       edgecolor="white", alpha=0.85)
-ax.set_xticks(range(n_top))
-ax.set_xticklabels(top_labels, rotation=45, ha="right", fontsize=8)
-ax.set_xlabel("Feature Index", fontsize=12)
-ax.set_ylabel("Importance (Mean Decrease in Impurity)", fontsize=12)
+df_display = pd.DataFrame(param_display)
+
+fig, ax = plt.subplots(figsize=(14, max(4, len(df_display) * 0.6)))
+ax.axis("off")
+
+table = ax.table(
+    cellText   = df_display.values,
+    colLabels  = df_display.columns,
+    cellLoc    = "center",
+    loc        = "center",
+)
+table.auto_set_font_size(False)
+table.set_fontsize(10)
+table.scale(1.2, 1.6)
+
+# Highlight header
+for j in range(len(df_display.columns)):
+    table[0, j].set_facecolor("#2c3e50")
+    table[0, j].set_text_props(color="white", fontweight="bold")
+
+# Highlight best dataset row
+best_row_idx = df_display[
+    df_display["Dataset"] == best_name
+].index[0] + 1
+
+for j in range(len(df_display.columns)):
+    table[best_row_idx, j].set_facecolor("#d5f5e3")
+
 ax.set_title(
-    f"Random Forest — Top {n_top} Feature Importances\n"
-    f"Best Dataset: {best_name}  "
-    f"(n_estimators={all_probs[best_name]['best_params']['n_estimators']})",
-    fontsize=13, fontweight="bold"
+    f"KNN + Optuna — Best Hyperparameters per Dataset\n"
+    f"(★ = overall best: {best_name})",
+    fontsize=13, fontweight="bold", pad=20
 )
-ax.grid(axis="y", alpha=0.3)
 plt.tight_layout()
-plt.savefig(
-    os.path.join(FIGURES_DIR,
-                 f"RF_Optuna_feature_importance_{best_name}.png"),
-    dpi=150, bbox_inches="tight"
-)
+plt.savefig(os.path.join(FIGURES_DIR,
+                         "KNN_Optuna_best_params_table.png"),
+            dpi=150, bbox_inches="tight")
 plt.show()
-print(f"✅ Feature importance plot saved ({best_name})")
+print("✅ Best params table plot saved")
 
 
 # ============================================================
@@ -850,7 +890,7 @@ for ds_name, data in all_probs.items():
     row = {"Dataset": ds_name}
     row.update({
         k: v for k, v in data["best_params"].items()
-        if k not in ("random_state", "n_jobs")
+        if k != "n_jobs"
     })
     row["CV_AUC"]   = round(data["cv_auc"], 4)
     row["Test_AUC"] = round(
@@ -862,7 +902,7 @@ df_params = pd.DataFrame(param_rows)
 print(df_params.to_string(index=False))
 
 params_table_path = os.path.join(
-    PARAMS_DIR, "RF_Optuna_all_best_params.csv"
+    PARAMS_DIR, "KNN_Optuna_all_best_params.csv"
 )
 df_params.to_csv(params_table_path, index=False)
 print(f"\n✅ Best params table saved → {params_table_path}")
@@ -876,7 +916,7 @@ best_row    = df_results[df_results["Dataset"] == best_name].iloc[0]
 best_params = all_probs[best_name]["best_params"]
 
 print("=" * 65)
-print("  RANDOM FOREST + OPTUNA — FINAL SUMMARY")
+print("  KNN + OPTUNA — FINAL SUMMARY")
 print("=" * 65)
 print(f"\n  Results saved to       : {RESULTS_DIR}")
 print(f"  Figures saved to       : {FIGURES_DIR}")
@@ -903,8 +943,8 @@ print(f"     F1 Score       : {best_row['F1_Score']:.4f}")
 print(f"     MCC            : {best_row['MCC']:.4f}")
 print(f"\n  Best hyperparameters ({best_name}):")
 for k, v in best_params.items():
-    if k not in ("random_state", "n_jobs"):
-        print(f"     {k:<25} : {v}")
+    if k != "n_jobs":
+        print(f"     {k:<14} : {v}")
 print(f"\n  Optuna settings:")
 print(f"     Sampler        : TPE (Tree-structured Parzen Estimator)")
 print(f"     Trials         : {N_TRIALS}")

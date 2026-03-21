@@ -24,7 +24,7 @@ import optuna
 from optuna.samplers import TPESampler
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.model_selection import (
     train_test_split, StratifiedKFold, cross_val_score
 )
@@ -45,17 +45,17 @@ print(f"   Optuna version : {optuna.__version__}")
 
 # DRIVE DATA PATH (ONLY for Google Colab, ignored in local runs)
 # FEATURE_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/data/features"
-# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/rf_optuna"
-# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna"
-# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/rf_optuna/best_params"
+# RESULTS_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/svm_optuna"
+# FIGURES_DIR  = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/figures/models/svm_optuna"
+# MODELS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/svm_optuna"
+# PARAMS_DIR   = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results/models/svm_optuna/best_params"
 
 # LOCAL DATA PATH (ONLY for local runs, ignored in Google Colab)
 FEATURE_DIR  = "../../../data/features"
-RESULTS_DIR  = "../../../results/models/rf_optuna"
-FIGURES_DIR  = "../../../results/figures/models/rf_optuna"
-MODELS_DIR   = "../../../results/models/rf_optuna"
-PARAMS_DIR   = "../../../results/models/rf_optuna/best_params"
+RESULTS_DIR  = "../../../results/models/svm_optuna"
+FIGURES_DIR  = "../../../results/figures/models/svm_optuna"
+MODELS_DIR   = "../../../results/models/svm_optuna"
+PARAMS_DIR   = "../../../results/models/svm_optuna/best_params"
 
 os.makedirs(RESULTS_DIR,  exist_ok=True)
 os.makedirs(FIGURES_DIR,  exist_ok=True)
@@ -89,30 +89,37 @@ RANDOM_STATE = 42
 # ── Search space description ─────────────────────────────────
 #
 #  Parameters tuned by Optuna:
-#    n_estimators      : number of trees in the forest
-#    max_depth         : max depth per tree (or None = unlimited)
-#    min_samples_split : min samples to split a node
-#    min_samples_leaf  : min samples at a leaf node
-#    max_features      : features considered at each split
-#                        "sqrt" → √n_features (classification default)
-#                        "log2" → log2(n_features)
-#                        float  → fraction of features (0.1–1.0)
-#    criterion         : split quality measure (gini / entropy / log_loss)
-#    bootstrap         : whether to use bootstrap samples per tree
-#    class_weight      : handles 1:1.5 AIP/non-AIP imbalance
-#    max_samples       : fraction of samples per tree (only if bootstrap=True)
-#    min_impurity_decrease: split only if impurity decrease >= this value
+#    kernel       : kernel function
+#                   "rbf"    — Radial Basis (default, best general)
+#                   "linear" — fast on high-dim PLM embeddings
+#                   "poly"   — polynomial, degree tuned separately
+#                   "sigmoid"— rarely wins, but worth exploring
+#    C            : regularisation [1e-3, 1000] log-uniform
+#                   high C = tight fit (overfit risk)
+#                   low  C = wider margin (underfit risk)
+#    gamma        : kernel coefficient for rbf/poly/sigmoid
+#                   "scale" = 1/(n_features × var(X)) ✅
+#                   "auto"  = 1/n_features
+#                   float   = manual [1e-5, 10] log-uniform
+#    degree       : polynomial degree [2, 5]
+#                   only sampled when kernel="poly"
+#    coef0        : independent term for poly/sigmoid [-1, 1]
+#                   only sampled when kernel in ("poly","sigmoid")
+#    class_weight : "balanced" or None for imbalance handling
+#    shrinking    : use shrinking heuristic [True, False]
+#                   True speeds up training, rarely hurts accuracy
+#
+#  ⚠️  probability=True always set → enables predict_proba for AUC
+#      Adds ~3× training time (Platt scaling) but required for ROC
 #
 SEARCH_SPACE = {
-    "n_estimators"        : "int [50, 500]",
-    "max_depth"           : "int [3, 30] or None",
-    "min_samples_split"   : "int [2, 20]",
-    "min_samples_leaf"    : "int [1, 20]",
-    "max_features"        : ["sqrt", "log2", 0.3, 0.5, 0.7, 1.0],
-    "criterion"           : ["gini", "entropy", "log_loss"],
-    "bootstrap"           : [True, False],
-    "class_weight"        : ["balanced", "balanced_subsample", None],
-    "min_impurity_decrease": "float [0.0, 0.05]",
+    "kernel"      : ["rbf", "linear", "poly", "sigmoid"],
+    "C"           : "float [1e-3, 1000] log-uniform",
+    "gamma"       : "scale / auto / float [1e-5, 10] log-uniform",
+    "degree"      : "int [2, 5]  (poly only)",
+    "coef0"       : "float [-1, 1]  (poly / sigmoid only)",
+    "class_weight": ["balanced", None],
+    "shrinking"   : [True, False],
 }
 
 print(f"✅ Config loaded")
@@ -122,7 +129,7 @@ print(f"   CV folds    : {N_CV_FOLDS}")
 print(f"   Train/Test  : {int((1-TEST_SIZE)*100)}% / {int(TEST_SIZE*100)}%")
 print(f"\n   Search space:")
 for k, v in SEARCH_SPACE.items():
-    print(f"     {k:<25} : {v}")
+    print(f"     {k:<14} : {v}")
 
 
 # ============================================================
@@ -185,70 +192,80 @@ def load_dataset(csv_path):
 
 def make_objective(X_train, y_train, n_folds, seed):
     """
-    Returns an Optuna objective function closed over the training
-    data. Each trial samples a different hyperparameter combination
-    and evaluates it via stratified k-fold CV on the training set.
+    Returns an Optuna objective function for SVM.
 
-    Objective: maximise mean AUC across k folds.
+    Objective: maximise mean AUC across stratified k-fold CV
+    on the training set.
 
-    Key RF-specific design decisions:
-      - max_depth: sampled as int OR None via conditional encoding
-      - max_features: includes both categorical strings and floats
-      - max_samples: only relevant when bootstrap=True, so it is
-        conditionally sampled to avoid wasted trials
-      - n_jobs=-1 in CV for parallelism
+    SVM-specific design decisions:
+      - kernel sampled first; degree, coef0, gamma then sampled
+        conditionally to avoid wasting trials on irrelevant params
+      - C uses log-uniform sampling → better coverage of [1e-3, 1000]
+      - gamma: Optuna first picks "scale"/"auto" (categorical) or
+        "manual" (which triggers a float sample) — this avoids
+        mixing categorical and float in one parameter
+      - probability=False in CV objective → ~3× faster than True
+        (Platt scaling not needed for AUC via cross_val_score which
+        uses decision_function internally when probability=False)
+        The final model uses probability=True for predict_proba
     """
     def objective(trial):
 
-        # ── max_depth: None or int ───────────────────────────
-        use_none_depth = trial.suggest_categorical(
-            "max_depth_none", [True, False]
+        kernel = trial.suggest_categorical(
+            "kernel", ["rbf", "linear", "poly", "sigmoid"]
         )
-        max_depth = None if use_none_depth else \
-            trial.suggest_int("max_depth", 3, 30)
 
-        # ── bootstrap and conditional max_samples ────────────
-        bootstrap = trial.suggest_categorical(
-            "bootstrap", [True, False]
+        C = trial.suggest_float("C", 1e-3, 1000.0, log=True)
+
+        # ── gamma: conditional on kernel ─────────────────────
+        # linear kernel does not use gamma
+        if kernel == "linear":
+            gamma = "scale"
+        else:
+            gamma_type = trial.suggest_categorical(
+                "gamma_type", ["scale", "auto", "manual"]
+            )
+            if gamma_type == "manual":
+                gamma = trial.suggest_float(
+                    "gamma_val", 1e-5, 10.0, log=True
+                )
+            else:
+                gamma = gamma_type
+
+        # ── degree: only for poly ─────────────────────────────
+        degree = trial.suggest_int("degree", 2, 5) \
+            if kernel == "poly" else 3
+
+        # ── coef0: only for poly and sigmoid ──────────────────
+        coef0 = trial.suggest_float("coef0", -1.0, 1.0) \
+            if kernel in ("poly", "sigmoid") else 0.0
+
+        class_weight = trial.suggest_categorical(
+            "class_weight", ["balanced", None]
         )
-        max_samples = trial.suggest_float(
-            "max_samples", 0.5, 1.0
-        ) if bootstrap else None
+        shrinking = trial.suggest_categorical(
+            "shrinking", [True, False]
+        )
 
         params = {
-            "n_estimators"        : trial.suggest_int(
-                "n_estimators", 50, 500
-            ),
-            "criterion"           : trial.suggest_categorical(
-                "criterion", ["gini", "entropy", "log_loss"]
-            ),
-            "max_depth"           : max_depth,
-            "min_samples_split"   : trial.suggest_int(
-                "min_samples_split", 2, 20
-            ),
-            "min_samples_leaf"    : trial.suggest_int(
-                "min_samples_leaf", 1, 20
-            ),
-            "max_features"        : trial.suggest_categorical(
-                "max_features", ["sqrt", "log2", 0.3, 0.5, 0.7, 1.0]
-            ),
-            "bootstrap"           : bootstrap,
-            "max_samples"         : max_samples,
-            "class_weight"        : trial.suggest_categorical(
-                "class_weight",
-                ["balanced", "balanced_subsample", None]
-            ),
-            "min_impurity_decrease": trial.suggest_float(
-                "min_impurity_decrease", 0.0, 0.05
-            ),
-            "n_jobs"              : -1,
-            "random_state"        : seed,
+            "kernel"      : kernel,
+            "C"           : C,
+            "gamma"       : gamma,
+            "degree"      : degree,
+            "coef0"       : coef0,
+            "class_weight": class_weight,
+            "shrinking"   : shrinking,
+            "probability" : False,   # faster in CV; True for final model
+            "cache_size"  : 500,
+            "random_state": seed,
         }
 
-        clf = RandomForestClassifier(**params)
+        clf = SVC(**params)
         cv  = StratifiedKFold(
             n_splits=n_folds, shuffle=True, random_state=seed
         )
+        # roc_auc works with SVC even when probability=False
+        # (uses decision_function instead of predict_proba)
         auc_scores = cross_val_score(
             clf, X_train, y_train,
             cv=cv, scoring="roc_auc", n_jobs=-1
@@ -260,26 +277,40 @@ def make_objective(X_train, y_train, n_folds, seed):
 
 def extract_best_params(trial_params, random_state):
     """
-    Reconstruct the final RF parameter dict from Optuna trial
-    params, handling conditional encodings for max_depth and
-    max_samples.
+    Reconstruct the final SVM parameter dict from Optuna trial
+    params. Applies conditional logic for gamma, degree, coef0
+    and sets probability=True for the final model.
     """
     params = trial_params.copy()
 
-    # max_depth
-    use_none = params.pop("max_depth_none", True)
-    if not use_none:
-        params["max_depth"] = params.get("max_depth", None)
+    kernel = params.get("kernel", "rbf")
+
+    # Resolve gamma
+    gamma_type = params.pop("gamma_type", None)
+    gamma_val  = params.pop("gamma_val",  None)
+
+    if kernel == "linear":
+        params["gamma"] = "scale"
+    elif gamma_type == "manual" and gamma_val is not None:
+        params["gamma"] = gamma_val
+    elif gamma_type is not None:
+        params["gamma"] = gamma_type
     else:
-        params.pop("max_depth", None)
-        params["max_depth"] = None
+        params["gamma"] = "scale"
 
-    # max_samples only valid when bootstrap=True
-    if not params.get("bootstrap", True):
-        params["max_samples"] = None
+    # degree only meaningful for poly
+    if kernel != "poly":
+        params["degree"] = 3
 
-    params["n_jobs"]       = -1
+    # coef0 only meaningful for poly/sigmoid
+    if kernel not in ("poly", "sigmoid"):
+        params["coef0"] = 0.0
+
+    # Final model needs probability=True for predict_proba / AUC
+    params["probability"]  = True
+    params["cache_size"]   = 500
     params["random_state"] = random_state
+
     return params
 
 
@@ -296,10 +327,11 @@ all_probs     = {}
 all_studies   = {}
 
 print("=" * 65)
-print("  Random Forest + Optuna — Training on 11 Datasets")
+print("  SVM + Optuna — Training on 11 Datasets")
 print(f"  Trials per dataset : {N_TRIALS}")
 print(f"  CV folds           : {N_CV_FOLDS} (StratifiedKFold)")
 print(f"  Sampler            : TPE (Tree-structured Parzen Estimator)")
+print(f"  ⚠️  SVM training is slow on PLM datasets — be patient")
 print("=" * 65)
 
 for ds_name, csv_file in DATASETS.items():
@@ -329,17 +361,19 @@ for ds_name, csv_file in DATASETS.items():
           f"Test: {len(X_test)} samples")
 
     # ── Scale features ───────────────────────────────────────
+    # ⚠️ Mandatory for SVM — unscaled features break distance calc
     scaler  = StandardScaler()
     X_train = scaler.fit_transform(X_train)
     X_test  = scaler.transform(X_test)
 
     # ── Run Optuna ───────────────────────────────────────────
     print(f"  Running Optuna ({N_TRIALS} trials, {N_CV_FOLDS}-fold CV)...")
+    print(f"  (probability=False in CV for speed; True for final model)")
 
     study = optuna.create_study(
         direction  = "maximize",
         sampler    = TPESampler(seed=OPTUNA_SEED),
-        study_name = f"RF_{ds_name}",
+        study_name = f"SVM_{ds_name}",
     )
     study.optimize(
         make_objective(X_train, y_train, N_CV_FOLDS, RANDOM_STATE),
@@ -356,13 +390,15 @@ for ds_name, csv_file in DATASETS.items():
     cv_auc = study.best_trial.value
 
     print(f"\n  ── Best Parameters (trial #{study.best_trial.number}) ──")
+    skip_print = {"cache_size", "random_state", "probability"}
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
-            print(f"     {k:<25} : {v}")
-    print(f"     {'CV AUC':<25} : {cv_auc:.4f}")
+        if k not in skip_print:
+            print(f"     {k:<14} : {v}")
+    print(f"     {'CV AUC':<14} : {cv_auc:.4f}")
 
-    # ── Train final model with best parameters ────────────────
-    clf = RandomForestClassifier(**best_params)
+    # ── Train final model (probability=True for predict_proba) ─
+    print(f"\n  Training final SVM with probability=True ...")
+    clf = SVC(**best_params)
     clf.fit(X_train, y_train)
 
     # ── Predict ──────────────────────────────────────────────
@@ -379,7 +415,7 @@ for ds_name, csv_file in DATASETS.items():
     metrics["Test_N"]     = len(X_test)
 
     for k, v in best_params.items():
-        if k not in ("random_state", "n_jobs"):
+        if k not in skip_print:
             metrics[f"param_{k}"] = v
     all_results.append(metrics)
 
@@ -402,15 +438,14 @@ for ds_name, csv_file in DATASETS.items():
         "prob_negative": 1 - y_prob,
     })
     prob_path = os.path.join(
-        RESULTS_DIR, f"{ds_name}_RF_Optuna_probabilities.csv"
+        RESULTS_DIR, f"{ds_name}_SVM_Optuna_probabilities.csv"
     )
     df_probs.to_csv(prob_path, index=False)
 
     # ── Save best params as JSON ─────────────────────────────
     params_to_save = {
-        k: (str(v) if v is None else v)
-        for k, v in best_params.items()
-        if k not in ("random_state", "n_jobs")
+        k: v for k, v in best_params.items()
+        if k not in skip_print
     }
     params_to_save.update({
         "cv_auc"     : round(cv_auc, 4),
@@ -425,7 +460,7 @@ for ds_name, csv_file in DATASETS.items():
         "dataset"    : ds_name,
     })
     param_path = os.path.join(
-        PARAMS_DIR, f"{ds_name}_RF_best_params.json"
+        PARAMS_DIR, f"{ds_name}_SVM_best_params.json"
     )
     with open(param_path, "w") as f:
         json.dump(params_to_save, f, indent=4)
@@ -470,18 +505,18 @@ df_results = pd.DataFrame(all_results)[metric_cols].sort_values(
 
 df_results.index += 1
 
-print("\n── RF + Optuna Performance Summary (sorted by Test AUC) ──")
+print("\n── SVM + Optuna Performance Summary (sorted by Test AUC) ──")
 print(df_results.to_string())
 
 summary_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_all_results_summary.csv"
+    RESULTS_DIR, "SVM_Optuna_all_results_summary.csv"
 )
 df_results.to_csv(summary_path, index=True, index_label="Rank")
 print(f"\n✅ Summary saved → {summary_path}")
 
 df_full   = pd.DataFrame(all_results)
 full_path = os.path.join(
-    RESULTS_DIR, "RF_Optuna_full_results_with_params.csv"
+    RESULTS_DIR, "SVM_Optuna_full_results_with_params.csv"
 )
 df_full.to_csv(full_path, index=False)
 print(f"✅ Full results (with params) saved → {full_path}")
@@ -492,19 +527,18 @@ print(f"✅ Full results (with params) saved → {full_path}")
 # ============================================================
 
 best_model_path  = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_model_{best_name}.joblib"
+    MODELS_DIR, f"SVM_Optuna_best_model_{best_name}.joblib"
 )
 best_scaler_path = os.path.join(
-    MODELS_DIR, f"RF_Optuna_best_scaler_{best_name}.joblib"
+    MODELS_DIR, f"SVM_Optuna_best_scaler_{best_name}.joblib"
 )
 
 joblib.dump(best_model,  best_model_path)
 joblib.dump(best_scaler, best_scaler_path)
 
 best_params_summary = {
-    k: (str(v) if v is None else v)
-    for k, v in all_probs[best_name]["best_params"].items()
-    if k not in ("random_state", "n_jobs")
+    k: v for k, v in all_probs[best_name]["best_params"].items()
+    if k not in {"cache_size", "random_state", "probability"}
 }
 best_params_summary.update({
     "dataset" : best_name,
@@ -512,7 +546,7 @@ best_params_summary.update({
     "cv_auc"  : round(all_probs[best_name]["cv_auc"], 4),
 })
 best_overall_path = os.path.join(
-    MODELS_DIR, "RF_Optuna_best_overall_params.json"
+    MODELS_DIR, "SVM_Optuna_best_overall_params.json"
 )
 with open(best_overall_path, "w") as f:
     json.dump(best_params_summary, f, indent=4)
@@ -526,8 +560,8 @@ print(f"   Scaler           : {best_scaler_path}")
 print(f"   Best params JSON : {best_overall_path}")
 print(f"\n   Best hyperparameters:")
 for k, v in all_probs[best_name]["best_params"].items():
-    if k not in ("random_state", "n_jobs"):
-        print(f"     {k:<25} : {v}")
+    if k not in {"cache_size", "random_state", "probability"}:
+        print(f"     {k:<14} : {v}")
 
 
 # ============================================================
@@ -539,7 +573,6 @@ heat_cols = ["Accuracy", "Sensitivity", "Specificity",
 heat_data = df_results.set_index("Dataset")[heat_cols]
 
 fig, ax = plt.subplots(figsize=(15, max(5, len(heat_data) * 0.7)))
-
 sns.heatmap(
     heat_data,
     annot=True, fmt=".4f", cmap="YlGn",
@@ -548,7 +581,7 @@ sns.heatmap(
     cbar_kws={"label": "Score"}
 )
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
+    f"SVM + Optuna ({N_TRIALS} trials) — "
     f"Performance Metrics Across All 11 Datasets",
     fontsize=13, fontweight="bold", pad=15
 )
@@ -559,7 +592,7 @@ ax.set_xticklabels(ax.get_xticklabels(), rotation=15,
                    ha="right", fontsize=10)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_metrics_heatmap.png"),
+                         "SVM_Optuna_metrics_heatmap.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Metrics heatmap saved")
@@ -585,7 +618,7 @@ for i, (col, color) in enumerate(zip(plot_cols, colors)):
 
 ax.set_xlabel("Dataset", fontsize=12)
 ax.set_ylabel("Score", fontsize=12)
-ax.set_title("Random Forest + Optuna — All Metrics per Dataset",
+ax.set_title("SVM + Optuna — All Metrics per Dataset",
              fontsize=14, fontweight="bold")
 ax.set_xticks(x)
 ax.set_xticklabels(df_results["Dataset"],
@@ -596,7 +629,7 @@ ax.grid(axis="y", alpha=0.3)
 ax.axhline(0.5, color="grey", linestyle="--", linewidth=0.8, alpha=0.6)
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_grouped_bar_chart.png"),
+                         "SVM_Optuna_grouped_bar_chart.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Grouped bar chart saved")
@@ -615,23 +648,25 @@ for (ds_name, data), color in zip(all_probs.items(), colors):
     auc_val     = roc_auc_score(data["y_test"], data["y_prob"])
     lw = 2.5 if ds_name == best_name else 1.2
     ls = "-"  if ds_name == best_name else "--"
-    ax.plot(fpr, tpr, color=color, linewidth=lw, linestyle=ls,
-            label=f"{ds_name} (AUC={auc_val:.4f})"
-                  + (" ★" if ds_name == best_name else ""))
+    bp = data["best_params"]
+    ax.plot(
+        fpr, tpr, color=color, linewidth=lw, linestyle=ls,
+        label=f"{ds_name} [{bp['kernel']}] "
+              f"C={bp['C']:.2f} (AUC={auc_val:.4f})"
+              + (" ★" if ds_name == best_name else "")
+    )
 
-ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5,
-        label="Random")
+ax.plot([0, 1], [0, 1], "k--", linewidth=1, alpha=0.5, label="Random")
 ax.set_xlabel("False Positive Rate", fontsize=12)
 ax.set_ylabel("True Positive Rate", fontsize=12)
-ax.set_title("Random Forest + Optuna — ROC Curves for All Datasets",
+ax.set_title("SVM + Optuna — ROC Curves for All Datasets",
              fontsize=14, fontweight="bold")
-ax.legend(fontsize=9, loc="lower right")
+ax.legend(fontsize=8, loc="lower right")
 ax.grid(alpha=0.3)
 ax.set_xlim([0, 1])
 ax.set_ylim([0, 1.02])
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_ROC_curves.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "SVM_Optuna_ROC_curves.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ ROC curves saved")
@@ -650,15 +685,18 @@ disp = ConfusionMatrixDisplay(
     display_labels=["Non-AIP (0)", "AIP (1)"]
 )
 disp.plot(cmap="Blues", ax=ax, colorbar=False)
+bp = best_data["best_params"]
 ax.set_title(
     f"Confusion Matrix — Best: {best_name}\n"
+    f"kernel={bp['kernel']}  C={bp['C']:.4f}  "
+    f"gamma={str(bp['gamma'])[:6]}\n"
     f"(Test AUC={best_auc:.4f}  "
-    f"CV AUC={all_probs[best_name]['cv_auc']:.4f})",
-    fontsize=11, fontweight="bold"
+    f"CV AUC={best_data['cv_auc']:.4f})",
+    fontsize=10, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         f"RF_Optuna_confusion_matrix_{best_name}.png"),
+                         f"SVM_Optuna_confusion_matrix_{best_name}.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print(f"✅ Confusion matrix saved ({best_name})")
@@ -666,7 +704,7 @@ print(f"✅ Confusion matrix saved ({best_name})")
 
 # ============================================================
 #   CELL 13 — Visualization 5: AUC Ranking
-#             Shows Test AUC and CV AUC side by side
+#             Shows Test AUC and CV AUC with kernel annotation
 # ============================================================
 
 fig, ax = plt.subplots(figsize=(13, 5))
@@ -676,30 +714,36 @@ width     = 0.35
 
 ax.barh(x + width / 2, sorted_df["AUC"].values, width,
         label="Test AUC",
-        color=["#2ecc71" if n == best_name else "#3498db"
+        color=["#2ecc71" if n == best_name else "#9b59b6"
                for n in sorted_df["Dataset"]],
         edgecolor="white", alpha=0.85)
 ax.barh(x - width / 2, sorted_df["CV_AUC"].values, width,
         label="CV AUC",
-        color=["#27ae60" if n == best_name else "#2980b9"
+        color=["#27ae60" if n == best_name else "#6c3483"
                for n in sorted_df["Dataset"]],
         edgecolor="white", alpha=0.65)
+
+for i, ds_name in enumerate(sorted_df["Dataset"]):
+    bp  = all_probs[ds_name]["best_params"]
+    auc = sorted_df.loc[sorted_df["Dataset"] == ds_name,
+                        "AUC"].values[0]
+    ax.text(auc + 0.005, i + width / 2,
+            f"{auc:.4f}  [{bp['kernel']}] C={bp['C']:.2f}",
+            va="center", fontsize=9)
 
 ax.set_yticks(x)
 ax.set_yticklabels(sorted_df["Dataset"], fontsize=10)
 ax.axvline(0.5, color="grey", linestyle="--", linewidth=1, alpha=0.7)
 ax.set_xlabel("AUC Score", fontsize=12)
 ax.set_title(
-    f"Random Forest + Optuna ({N_TRIALS} trials) — "
-    f"Test AUC vs CV AUC Ranking",
+    f"SVM + Optuna ({N_TRIALS} trials) — Test AUC vs CV AUC Ranking",
     fontsize=13, fontweight="bold"
 )
-ax.set_xlim(0, 1.05)
+ax.set_xlim(0, 1.22)
 ax.legend(fontsize=11)
 ax.grid(axis="x", alpha=0.3)
 plt.tight_layout()
-plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_AUC_ranking.png"),
+plt.savefig(os.path.join(FIGURES_DIR, "SVM_Optuna_AUC_ranking.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ AUC ranking chart saved")
@@ -707,7 +751,6 @@ print("✅ AUC ranking chart saved")
 
 # ============================================================
 #   CELL 14 — Visualization 6: Optimization History
-#             AUC improvement over 100 trials per dataset
 # ============================================================
 
 fig, axes = plt.subplots(3, 4, figsize=(20, 14), sharey=False)
@@ -736,8 +779,16 @@ for idx, (ds_name, study) in enumerate(all_studies.items()):
     ax.axhline(max(trial_vals), color="#e74c3c",
                linestyle="--", linewidth=0.8, alpha=0.5)
 
+    bp = all_probs.get(ds_name, {}).get("best_params", {})
+    if bp:
+        ax.set_xlabel(
+            f"kernel={bp.get('kernel','?')}  "
+            f"C={bp.get('C', '?'):.2f}  "
+            f"gamma={str(bp.get('gamma','?'))[:6]}",
+            fontsize=8
+        )
+
     ax.set_title(ds_name, fontsize=11, fontweight="bold")
-    ax.set_xlabel("Trial Number", fontsize=9)
     ax.set_ylabel("CV AUC", fontsize=9)
     ax.legend(fontsize=8)
     ax.grid(alpha=0.3)
@@ -747,20 +798,20 @@ for idx in range(len(all_studies), len(axes)):
     axes[idx].set_visible(False)
 
 plt.suptitle(
-    f"Optuna Optimization History — Random Forest "
+    f"Optuna Optimization History — SVM "
     f"({N_TRIALS} trials per dataset)",
     fontsize=14, fontweight="bold"
 )
 plt.tight_layout()
 plt.savefig(os.path.join(FIGURES_DIR,
-                         "RF_Optuna_optimization_history.png"),
+                         "SVM_Optuna_optimization_history.png"),
             dpi=150, bbox_inches="tight")
 plt.show()
 print("✅ Optimization history plot saved")
 
 
 # ============================================================
-#   CELL 15 — Visualization 7: Parameter Importance
+#   CELL 15 — Visualization 7: Parameter Importance (Fanova)
 # ============================================================
 
 try:
@@ -771,14 +822,10 @@ try:
 
     param_names  = list(importances.keys())
     param_values = list(importances.values())
-    clean_names  = [
-        n.replace("max_depth_none", "max_depth (None?)")
-        for n in param_names
-    ]
 
-    fig, ax = plt.subplots(figsize=(11, 5))
-    bars = ax.barh(clean_names[::-1], param_values[::-1],
-                   color="#27ae60", edgecolor="white", alpha=0.85)
+    fig, ax = plt.subplots(figsize=(10, 5))
+    bars = ax.barh(param_names[::-1], param_values[::-1],
+                   color="#9b59b6", edgecolor="white", alpha=0.85)
     for bar, val in zip(bars, param_values[::-1]):
         ax.text(bar.get_width() + 0.005,
                 bar.get_y() + bar.get_height() / 2,
@@ -795,7 +842,7 @@ try:
     plt.tight_layout()
     plt.savefig(
         os.path.join(FIGURES_DIR,
-                     f"RF_Optuna_param_importance_{best_name}.png"),
+                     f"SVM_Optuna_param_importance_{best_name}.png"),
         dpi=150, bbox_inches="tight"
     )
     plt.show()
@@ -806,38 +853,91 @@ except Exception as e:
 
 
 # ============================================================
-#   CELL 16 — Visualization 8: Feature Importance (Best Model)
-#             RF built-in feature importances from best model
+#   CELL 16 — Visualization 8: Kernel Distribution Across Datasets
+#             Shows which kernel Optuna selected per dataset —
+#             unique to SVM (no feature importance available)
 # ============================================================
 
-importances = best_model.feature_importances_
-n_top       = min(30, len(importances))
-top_idx     = np.argsort(importances)[::-1][:n_top]
-top_imp     = importances[top_idx]
-top_labels  = [f"F{i}" for i in top_idx]
+kernel_counts = {}
+for ds_name, data in all_probs.items():
+    k = data["best_params"].get("kernel", "unknown")
+    kernel_counts[k] = kernel_counts.get(k, 0) + 1
 
-fig, ax = plt.subplots(figsize=(14, 5))
-ax.bar(range(n_top), top_imp, color="#27ae60",
-       edgecolor="white", alpha=0.85)
-ax.set_xticks(range(n_top))
-ax.set_xticklabels(top_labels, rotation=45, ha="right", fontsize=8)
-ax.set_xlabel("Feature Index", fontsize=12)
-ax.set_ylabel("Importance (Mean Decrease in Impurity)", fontsize=12)
-ax.set_title(
-    f"Random Forest — Top {n_top} Feature Importances\n"
-    f"Best Dataset: {best_name}  "
-    f"(n_estimators={all_probs[best_name]['best_params']['n_estimators']})",
-    fontsize=13, fontweight="bold"
+# Per-dataset kernel summary table plot
+param_display = []
+for ds_name, data in all_probs.items():
+    bp  = data["best_params"]
+    row = {
+        "Dataset"     : ds_name,
+        "kernel"      : bp.get("kernel", "?"),
+        "C"           : f"{bp.get('C', 0):.4f}",
+        "gamma"       : str(bp.get("gamma", "?"))[:8],
+        "class_weight": str(bp.get("class_weight", "?")),
+        "shrinking"   : str(bp.get("shrinking", "?")),
+        "CV AUC"      : f"{data['cv_auc']:.4f}",
+        "Test AUC"    : f"{roc_auc_score(data['y_test'], data['y_prob']):.4f}",
+    }
+    param_display.append(row)
+
+df_display = pd.DataFrame(param_display)
+
+fig, axes = plt.subplots(1, 2, figsize=(18, max(4, len(df_display) * 0.6)),
+                         gridspec_kw={"width_ratios": [3, 1]})
+
+# Left: parameter table
+ax_table = axes[0]
+ax_table.axis("off")
+table = ax_table.table(
+    cellText  = df_display.values,
+    colLabels = df_display.columns,
+    cellLoc   = "center",
+    loc       = "center",
 )
-ax.grid(axis="y", alpha=0.3)
+table.auto_set_font_size(False)
+table.set_fontsize(9)
+table.scale(1.1, 1.5)
+
+for j in range(len(df_display.columns)):
+    table[0, j].set_facecolor("#2c3e50")
+    table[0, j].set_text_props(color="white", fontweight="bold")
+
+best_row_idx = df_display[
+    df_display["Dataset"] == best_name
+].index[0] + 1
+for j in range(len(df_display.columns)):
+    table[best_row_idx, j].set_facecolor("#d5f5e3")
+
+ax_table.set_title(
+    f"SVM + Optuna — Best Hyperparameters per Dataset  "
+    f"(★ = {best_name})",
+    fontsize=12, fontweight="bold", pad=15
+)
+
+# Right: kernel distribution pie chart
+ax_pie = axes[1]
+kern_labels = list(kernel_counts.keys())
+kern_values = list(kernel_counts.values())
+kern_colors = {"rbf": "#3498db", "linear": "#2ecc71",
+               "poly": "#e67e22", "sigmoid": "#9b59b6"}
+pie_colors  = [kern_colors.get(k, "#95a5a6") for k in kern_labels]
+
+ax_pie.pie(
+    kern_values,
+    labels     = kern_labels,
+    colors     = pie_colors,
+    autopct    = "%1.0f%%",
+    startangle = 140,
+    wedgeprops = dict(edgecolor="white", linewidth=1.5),
+)
+ax_pie.set_title("Kernel selected\nacross datasets",
+                 fontsize=11, fontweight="bold")
+
 plt.tight_layout()
-plt.savefig(
-    os.path.join(FIGURES_DIR,
-                 f"RF_Optuna_feature_importance_{best_name}.png"),
-    dpi=150, bbox_inches="tight"
-)
+plt.savefig(os.path.join(FIGURES_DIR,
+                         "SVM_Optuna_best_params_table.png"),
+            dpi=150, bbox_inches="tight")
 plt.show()
-print(f"✅ Feature importance plot saved ({best_name})")
+print("✅ Best params table + kernel distribution plot saved")
 
 
 # ============================================================
@@ -845,12 +945,13 @@ print(f"✅ Feature importance plot saved ({best_name})")
 # ============================================================
 
 print("\n── Best Hyperparameters per Dataset ──────────────────────")
+skip_cols = {"cache_size", "random_state", "probability"}
 param_rows = []
 for ds_name, data in all_probs.items():
     row = {"Dataset": ds_name}
     row.update({
         k: v for k, v in data["best_params"].items()
-        if k not in ("random_state", "n_jobs")
+        if k not in skip_cols
     })
     row["CV_AUC"]   = round(data["cv_auc"], 4)
     row["Test_AUC"] = round(
@@ -862,7 +963,7 @@ df_params = pd.DataFrame(param_rows)
 print(df_params.to_string(index=False))
 
 params_table_path = os.path.join(
-    PARAMS_DIR, "RF_Optuna_all_best_params.csv"
+    PARAMS_DIR, "SVM_Optuna_all_best_params.csv"
 )
 df_params.to_csv(params_table_path, index=False)
 print(f"\n✅ Best params table saved → {params_table_path}")
@@ -876,7 +977,7 @@ best_row    = df_results[df_results["Dataset"] == best_name].iloc[0]
 best_params = all_probs[best_name]["best_params"]
 
 print("=" * 65)
-print("  RANDOM FOREST + OPTUNA — FINAL SUMMARY")
+print("  SVM + OPTUNA — FINAL SUMMARY")
 print("=" * 65)
 print(f"\n  Results saved to       : {RESULTS_DIR}")
 print(f"  Figures saved to       : {FIGURES_DIR}")
@@ -903,13 +1004,17 @@ print(f"     F1 Score       : {best_row['F1_Score']:.4f}")
 print(f"     MCC            : {best_row['MCC']:.4f}")
 print(f"\n  Best hyperparameters ({best_name}):")
 for k, v in best_params.items():
-    if k not in ("random_state", "n_jobs"):
-        print(f"     {k:<25} : {v}")
+    if k not in {"cache_size", "random_state", "probability"}:
+        print(f"     {k:<14} : {v}")
 print(f"\n  Optuna settings:")
 print(f"     Sampler        : TPE (Tree-structured Parzen Estimator)")
 print(f"     Trials         : {N_TRIALS}")
 print(f"     CV folds       : {N_CV_FOLDS} (StratifiedKFold)")
 print(f"     Objective      : Maximise mean CV AUC")
+print(f"\n  Kernel distribution across 11 datasets:")
+for k, cnt in sorted(kernel_counts.items(),
+                     key=lambda x: -x[1]):
+    print(f"     {k:<10} : {cnt} dataset(s)")
 print(f"\n  Saved files:")
 print(f"     Per-dataset JSON params  : {PARAMS_DIR}/")
 print(f"     All-params CSV           : {params_table_path}")
