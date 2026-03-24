@@ -1,0 +1,22 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.8964889166933819,
+    "n_estimators": 398,
+    "criterion": "log_loss",
+    "min_samples_split": 7,
+    "min_samples_leaf": 3,
+    "max_features": 0.5,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.0048911766938041475,
+    "max_depth": "None",
+    "cv_auc": 0.7444,
+    "test_auc": 0.7158,
+    "accuracy": 0.7002,
+    "sensitivity": 0.4068,
+    "specificity": 0.8959,
+    "f1_score": 0.5207,
+    "mcc": 0.3551,
+    "best_trial": 81,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

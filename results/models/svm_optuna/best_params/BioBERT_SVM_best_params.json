@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 1.3575935866924753,
+    "class_weight": null,
+    "shrinking": true,
+    "gamma": "scale",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.7475,
+    "test_auc": 0.7322,
+    "accuracy": 0.7321,
+    "sensitivity": 0.5209,
+    "specificity": 0.8731,
+    "f1_score": 0.6089,
+    "mcc": 0.4278,
+    "best_trial": 79,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

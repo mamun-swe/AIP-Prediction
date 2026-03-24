@@ -1,0 +1,14 @@
+{
+    "max_depth": 6,
+    "criterion": "gini",
+    "splitter": "best",
+    "min_samples_split": 4,
+    "min_samples_leaf": 20,
+    "max_features": "None",
+    "class_weight": "balanced",
+    "ccp_alpha": 0.001130307971021106,
+    "random_state": 42,
+    "dataset": "CTDC",
+    "test_auc": 0.7846,
+    "cv_auc": 0.7714
+}

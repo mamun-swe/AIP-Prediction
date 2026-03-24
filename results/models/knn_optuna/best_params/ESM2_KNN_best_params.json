@@ -1,0 +1,18 @@
+{
+    "metric": "euclidean",
+    "algorithm": "auto",
+    "n_neighbors": 20,
+    "weights": "distance",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.6732,
+    "test_auc": 0.6798,
+    "accuracy": 0.691,
+    "sensitivity": 0.3802,
+    "specificity": 0.8985,
+    "f1_score": 0.4963,
+    "mcc": 0.3335,
+    "best_trial": 62,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

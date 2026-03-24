@@ -1,0 +1,20 @@
+{
+    "boosting_type": "goss",
+    "n_estimators": 385,
+    "num_leaves": 85,
+    "max_depth": 3,
+    "learning_rate": 0.09522629929733405,
+    "min_child_samples": 92,
+    "colsample_bytree": 0.5636835560347864,
+    "reg_alpha": 1.9018945403626868e-05,
+    "reg_lambda": 0.18840136172622704,
+    "min_split_gain": 4.7859774511105,
+    "scale_pos_weight": 1.4043019162703538,
+    "path_smooth": 0.069521082821711,
+    "extra_trees": false,
+    "subsample": 1.0,
+    "dataset": "CTDC",
+    "test_auc": 0.8304,
+    "cv_auc": 0.818,
+    "best_iter": 211
+}

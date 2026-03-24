@@ -1,0 +1,22 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.9803814995345721,
+    "n_estimators": 132,
+    "criterion": "log_loss",
+    "min_samples_split": 15,
+    "min_samples_leaf": 1,
+    "max_features": "log2",
+    "class_weight": "None",
+    "min_impurity_decrease": 1.5455114662805828e-05,
+    "max_depth": "None",
+    "cv_auc": 0.8216,
+    "test_auc": 0.8227,
+    "accuracy": 0.7717,
+    "sensitivity": 0.5894,
+    "specificity": 0.8934,
+    "f1_score": 0.6739,
+    "mcc": 0.5162,
+    "best_trial": 90,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

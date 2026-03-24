@@ -1,0 +1,11 @@
+{
+    "metric": "minkowski",
+    "algorithm": "brute",
+    "p": 1,
+    "n_neighbors": 22,
+    "weights": "distance",
+    "leaf_size": 30,
+    "dataset": "AAC",
+    "test_auc": 0.748,
+    "cv_auc": 0.7216
+}

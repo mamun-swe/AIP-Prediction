@@ -1,0 +1,23 @@
+{
+    "max_depth": 22,
+    "bootstrap": false,
+    "n_estimators": 248,
+    "criterion": "log_loss",
+    "min_samples_split": 14,
+    "min_samples_leaf": 3,
+    "max_features": 1.0,
+    "class_weight": "balanced",
+    "min_impurity_decrease": 0.0037345704245267965,
+    "max_samples": "None",
+    "max_leaf_nodes": "None",
+    "cv_auc": 0.7548,
+    "test_auc": 0.7272,
+    "accuracy": 0.726,
+    "sensitivity": 0.5513,
+    "specificity": 0.8426,
+    "f1_score": 0.617,
+    "mcc": 0.4155,
+    "best_trial": 95,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

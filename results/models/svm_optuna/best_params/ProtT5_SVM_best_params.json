@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 4.288303008869907,
+    "class_weight": "balanced",
+    "shrinking": false,
+    "gamma": "auto",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.755,
+    "test_auc": 0.7359,
+    "accuracy": 0.7093,
+    "sensitivity": 0.5741,
+    "specificity": 0.7995,
+    "f1_score": 0.6126,
+    "mcc": 0.3838,
+    "best_trial": 80,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

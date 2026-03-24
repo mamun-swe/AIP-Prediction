@@ -1,0 +1,16 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.19054688341246906,
+    "binarize": 0.47660014164017056,
+    "class_prior_pos": 0.3526113159069523,
+    "cv_auc": 0.7594,
+    "test_auc": 0.7744,
+    "accuracy": 0.7565,
+    "sensitivity": 0.6616,
+    "specificity": 0.8198,
+    "f1_score": 0.685,
+    "mcc": 0.4877,
+    "best_trial": 91,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

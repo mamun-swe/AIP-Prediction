@@ -1,0 +1,15 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.6583520249828752,
+    "n_estimators": 191,
+    "criterion": "log_loss",
+    "min_samples_split": 8,
+    "min_samples_leaf": 3,
+    "max_features": "log2",
+    "class_weight": "balanced",
+    "min_impurity_decrease": 0.0012237867299269652,
+    "max_depth": "None",
+    "dataset": "AAC",
+    "test_auc": 0.8296,
+    "cv_auc": 0.8162
+}

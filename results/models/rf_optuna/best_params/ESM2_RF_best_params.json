@@ -1,0 +1,22 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.687891131093872,
+    "n_estimators": 481,
+    "criterion": "entropy",
+    "min_samples_split": 6,
+    "min_samples_leaf": 4,
+    "max_features": 0.5,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.008867626117070792,
+    "max_depth": "None",
+    "cv_auc": 0.7182,
+    "test_auc": 0.704,
+    "accuracy": 0.688,
+    "sensitivity": 0.4373,
+    "specificity": 0.8553,
+    "f1_score": 0.5287,
+    "mcc": 0.3261,
+    "best_trial": 86,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

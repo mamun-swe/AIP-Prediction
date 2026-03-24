@@ -1,0 +1,18 @@
+{
+    "metric": "minkowski",
+    "algorithm": "brute",
+    "p": 1,
+    "n_neighbors": 17,
+    "weights": "distance",
+    "leaf_size": 30,
+    "cv_auc": 0.7062,
+    "test_auc": 0.6749,
+    "accuracy": 0.6728,
+    "sensitivity": 0.3992,
+    "specificity": 0.8553,
+    "f1_score": 0.4941,
+    "mcc": 0.2894,
+    "best_trial": 22,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

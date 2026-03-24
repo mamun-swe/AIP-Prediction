@@ -1,0 +1,23 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.6585150290545316,
+    "max_leaf_nodes": 353,
+    "n_estimators": 310,
+    "criterion": "log_loss",
+    "min_samples_split": 9,
+    "min_samples_leaf": 6,
+    "max_features": 0.5,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.0010169018656105092,
+    "max_depth": "None",
+    "cv_auc": 0.7093,
+    "test_auc": 0.7222,
+    "accuracy": 0.7017,
+    "sensitivity": 0.4183,
+    "specificity": 0.8909,
+    "f1_score": 0.5288,
+    "mcc": 0.3583,
+    "best_trial": 95,
+    "n_trials": 100,
+    "dataset": "ESMC"
+}

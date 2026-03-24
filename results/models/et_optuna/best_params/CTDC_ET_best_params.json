@@ -1,0 +1,23 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.9388737447583023,
+    "max_leaf_nodes": 330,
+    "n_estimators": 297,
+    "criterion": "gini",
+    "min_samples_split": 12,
+    "min_samples_leaf": 1,
+    "max_features": 1.0,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.0010777237268770575,
+    "max_depth": "None",
+    "cv_auc": 0.8046,
+    "test_auc": 0.8085,
+    "accuracy": 0.7732,
+    "sensitivity": 0.5856,
+    "specificity": 0.8985,
+    "f1_score": 0.674,
+    "mcc": 0.5199,
+    "best_trial": 83,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

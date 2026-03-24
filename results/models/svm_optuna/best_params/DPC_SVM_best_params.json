@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 4.47460929948933,
+    "class_weight": "balanced",
+    "shrinking": true,
+    "gamma": "auto",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.6925,
+    "test_auc": 0.6834,
+    "accuracy": 0.6606,
+    "sensitivity": 0.5095,
+    "specificity": 0.7614,
+    "f1_score": 0.5458,
+    "mcc": 0.2789,
+    "best_trial": 72,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

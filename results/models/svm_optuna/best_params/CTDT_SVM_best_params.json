@@ -1,0 +1,19 @@
+{
+    "kernel": "sigmoid",
+    "C": 123.90199608834513,
+    "coef0": -0.9300687005425607,
+    "class_weight": null,
+    "shrinking": true,
+    "gamma": 0.0043919923523738245,
+    "degree": 3,
+    "cv_auc": 0.592,
+    "test_auc": 0.5783,
+    "accuracy": 0.6027,
+    "sensitivity": 0.076,
+    "specificity": 0.9543,
+    "f1_score": 0.1329,
+    "mcc": 0.0637,
+    "best_trial": 79,
+    "n_trials": 100,
+    "dataset": "CTDT"
+}

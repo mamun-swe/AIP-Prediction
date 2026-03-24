@@ -1,0 +1,22 @@
+{
+    "max_depth": 9,
+    "bootstrap": false,
+    "n_estimators": 248,
+    "criterion": "log_loss",
+    "min_samples_split": 8,
+    "min_samples_leaf": 12,
+    "max_features": 0.5,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.0014807178587333642,
+    "max_samples": "None",
+    "cv_auc": 0.8031,
+    "test_auc": 0.805,
+    "accuracy": 0.8021,
+    "sensitivity": 0.6578,
+    "specificity": 0.8985,
+    "f1_score": 0.7269,
+    "mcc": 0.5823,
+    "best_trial": 83,
+    "n_trials": 100,
+    "dataset": "GAAC"
+}

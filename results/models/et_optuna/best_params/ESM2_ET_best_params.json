@@ -1,0 +1,23 @@
+{
+    "max_depth": 25,
+    "bootstrap": false,
+    "max_leaf_nodes": 193,
+    "n_estimators": 469,
+    "criterion": "gini",
+    "min_samples_split": 13,
+    "min_samples_leaf": 10,
+    "max_features": 1.0,
+    "class_weight": "balanced",
+    "min_impurity_decrease": 4.5426181102238995e-05,
+    "max_samples": "None",
+    "cv_auc": 0.7159,
+    "test_auc": 0.7059,
+    "accuracy": 0.6834,
+    "sensitivity": 0.5057,
+    "specificity": 0.802,
+    "f1_score": 0.5612,
+    "mcc": 0.3229,
+    "best_trial": 97,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

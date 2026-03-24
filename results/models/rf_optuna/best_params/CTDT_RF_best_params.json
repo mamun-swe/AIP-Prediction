@@ -1,0 +1,22 @@
+{
+    "max_depth": 10,
+    "bootstrap": true,
+    "max_samples": 0.72441775642484,
+    "n_estimators": 474,
+    "criterion": "entropy",
+    "min_samples_split": 6,
+    "min_samples_leaf": 8,
+    "max_features": 0.7,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.006403584325043274,
+    "cv_auc": 0.8065,
+    "test_auc": 0.8104,
+    "accuracy": 0.8097,
+    "sensitivity": 0.711,
+    "specificity": 0.8756,
+    "f1_score": 0.7495,
+    "mcc": 0.5991,
+    "best_trial": 84,
+    "n_trials": 100,
+    "dataset": "CTDT"
+}

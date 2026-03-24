@@ -1,0 +1,21 @@
+{
+    "max_depth": 5,
+    "criterion": "gini",
+    "splitter": "best",
+    "min_samples_split": 18,
+    "min_samples_leaf": 6,
+    "max_features": "None",
+    "class_weight": "balanced",
+    "ccp_alpha": 0.00394180803908812,
+    "random_state": 42,
+    "cv_auc": 0.7074,
+    "test_auc": 0.6751,
+    "accuracy": 0.6575,
+    "sensitivity": 0.5932,
+    "specificity": 0.7005,
+    "f1_score": 0.581,
+    "mcc": 0.2918,
+    "best_trial": 31,
+    "n_trials": 100,
+    "dataset": "PAAC"
+}

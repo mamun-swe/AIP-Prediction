@@ -1,0 +1,19 @@
+{
+    "kernel": "poly",
+    "C": 15.689929657917906,
+    "degree": 4,
+    "coef0": 0.47200972806273866,
+    "class_weight": null,
+    "shrinking": false,
+    "gamma": 0.00020648898673587604,
+    "cv_auc": 0.7262,
+    "test_auc": 0.7421,
+    "accuracy": 0.7032,
+    "sensitivity": 0.4677,
+    "specificity": 0.8604,
+    "f1_score": 0.5578,
+    "mcc": 0.3617,
+    "best_trial": 13,
+    "n_trials": 100,
+    "dataset": "ESMC"
+}

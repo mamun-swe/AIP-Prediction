@@ -1,0 +1,15 @@
+{
+    "nb_type": "gaussian",
+    "var_smoothing": 2.8870818882329815e-08,
+    "class_prior_pos": 0.5695909807531638,
+    "cv_auc": 0.6635,
+    "test_auc": 0.6138,
+    "accuracy": 0.6104,
+    "sensitivity": 0.4639,
+    "specificity": 0.7081,
+    "f1_score": 0.488,
+    "mcc": 0.1755,
+    "best_trial": 10,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

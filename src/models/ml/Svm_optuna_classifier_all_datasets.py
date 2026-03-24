@@ -10,6 +10,7 @@
 # ============================================================
 # !pip install optuna -q  # Install Optuna for colab
 
+
 import os
 import numpy as np
 import pandas as pd
@@ -25,6 +26,7 @@ from optuna.samplers import TPESampler
 optuna.logging.set_verbosity(optuna.logging.WARNING)
 
 from sklearn.svm import SVC
+# from thundersvm import SVC
 from sklearn.model_selection import (
     train_test_split, StratifiedKFold, cross_val_score
 )
@@ -35,6 +37,7 @@ from sklearn.metrics import (
     ConfusionMatrixDisplay
 )
 
+print(f" Total CPU: {os.cpu_count()}")
 print("✅ Libraries loaded")
 print(f"   Optuna version : {optuna.__version__}")
 
@@ -378,6 +381,7 @@ for ds_name, csv_file in DATASETS.items():
     study.optimize(
         make_objective(X_train, y_train, N_CV_FOLDS, RANDOM_STATE),
         n_trials          = N_TRIALS,
+        n_jobs    = 10,
         show_progress_bar = True,
     )
 
@@ -1022,3 +1026,4 @@ print(f"     Full results CSV         : {full_path}")
 print(f"     Per-dataset probs CSV    : {RESULTS_DIR}/")
 print(f"     Best model               : {best_model_path}")
 print("=" * 65)
+

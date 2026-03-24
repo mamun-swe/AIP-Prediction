@@ -1,0 +1,18 @@
+{
+    "metric": "minkowski",
+    "algorithm": "ball_tree",
+    "p": 1,
+    "leaf_size": 74,
+    "n_neighbors": 23,
+    "weights": "distance",
+    "cv_auc": 0.6738,
+    "test_auc": 0.6662,
+    "accuracy": 0.6438,
+    "sensitivity": 0.3156,
+    "specificity": 0.8629,
+    "f1_score": 0.415,
+    "mcc": 0.2153,
+    "best_trial": 52,
+    "n_trials": 100,
+    "dataset": "CTDT"
+}

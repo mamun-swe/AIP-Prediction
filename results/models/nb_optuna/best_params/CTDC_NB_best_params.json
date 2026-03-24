@@ -1,0 +1,16 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.008206586524092133,
+    "binarize": 0.2894704343957567,
+    "class_prior_pos": 0.5324619147010774,
+    "cv_auc": 0.6167,
+    "test_auc": 0.5855,
+    "accuracy": 0.586,
+    "sensitivity": 0.3992,
+    "specificity": 0.7107,
+    "f1_score": 0.4357,
+    "mcc": 0.1142,
+    "best_trial": 61,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

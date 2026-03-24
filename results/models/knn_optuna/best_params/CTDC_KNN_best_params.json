@@ -1,0 +1,18 @@
+{
+    "metric": "manhattan",
+    "algorithm": "auto",
+    "n_neighbors": 26,
+    "weights": "distance",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.6595,
+    "test_auc": 0.658,
+    "accuracy": 0.6591,
+    "sensitivity": 0.289,
+    "specificity": 0.9061,
+    "f1_score": 0.4043,
+    "mcc": 0.2533,
+    "best_trial": 13,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

@@ -1,0 +1,16 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.4822804353807075,
+    "binarize": 0.16244816710019688,
+    "class_prior_pos": 0.53050077625928,
+    "cv_auc": 0.6627,
+    "test_auc": 0.6726,
+    "accuracy": 0.6636,
+    "sensitivity": 0.4867,
+    "specificity": 0.7817,
+    "f1_score": 0.5367,
+    "mcc": 0.2806,
+    "best_trial": 31,
+    "n_trials": 100,
+    "dataset": "PAAC"
+}

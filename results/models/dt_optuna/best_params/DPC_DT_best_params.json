@@ -1,0 +1,21 @@
+{
+    "criterion": "gini",
+    "splitter": "best",
+    "min_samples_split": 7,
+    "min_samples_leaf": 5,
+    "max_features": "None",
+    "class_weight": "balanced",
+    "ccp_alpha": 0.0004474994839393856,
+    "max_depth": "None",
+    "random_state": 42,
+    "cv_auc": 0.7121,
+    "test_auc": 0.7252,
+    "accuracy": 0.6895,
+    "sensitivity": 0.6654,
+    "specificity": 0.7056,
+    "f1_score": 0.6318,
+    "mcc": 0.3659,
+    "best_trial": 76,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

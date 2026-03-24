@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 1.3608382990296501,
+    "class_weight": null,
+    "shrinking": false,
+    "gamma": "auto",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.6955,
+    "test_auc": 0.6873,
+    "accuracy": 0.6865,
+    "sensitivity": 0.4411,
+    "specificity": 0.8503,
+    "f1_score": 0.5297,
+    "mcc": 0.3229,
+    "best_trial": 92,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

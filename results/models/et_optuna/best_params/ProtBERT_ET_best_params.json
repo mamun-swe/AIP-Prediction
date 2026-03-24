@@ -1,0 +1,23 @@
+{
+    "bootstrap": false,
+    "n_estimators": 332,
+    "criterion": "log_loss",
+    "min_samples_split": 14,
+    "min_samples_leaf": 2,
+    "max_features": 0.3,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.003597910698414869,
+    "max_depth": "None",
+    "max_samples": "None",
+    "max_leaf_nodes": "None",
+    "cv_auc": 0.6598,
+    "test_auc": 0.6476,
+    "accuracy": 0.6484,
+    "sensitivity": 0.5399,
+    "specificity": 0.7208,
+    "f1_score": 0.5515,
+    "mcc": 0.2627,
+    "best_trial": 87,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

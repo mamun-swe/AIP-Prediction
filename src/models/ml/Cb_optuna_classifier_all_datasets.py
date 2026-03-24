@@ -1196,13 +1196,13 @@ os.makedirs(PARAMS_DIR,   exist_ok=True)
 
 # ── All 11 feature datasets ──────────────────────────────────
 DATASETS = {
-    # "AAC"     : "AAC_features.csv",
-    # "DPC"     : "DPC_features.csv",
-    # "CTDC"    : "CTDC_features.csv",
-    # "CTDT"    : "CTDT_features.csv",
-    # "GAAC"    : "GAAC_features.csv",
-    # "PAAC"    : "PAAC_features.csv",
-    # "ProtBERT": "ProtBERT_features.csv",
+    "AAC"     : "AAC_features.csv",
+    "DPC"     : "DPC_features.csv",
+    "CTDC"    : "CTDC_features.csv",
+    "CTDT"    : "CTDT_features.csv",
+    "GAAC"    : "GAAC_features.csv",
+    "PAAC"    : "PAAC_features.csv",
+    "ProtBERT": "ProtBERT_features.csv",
     "ProtT5"  : "ProtT5_features.csv",
     "ESM2"    : "ESM2_features.csv",
     "BioBERT" : "BioBERT_features.csv",

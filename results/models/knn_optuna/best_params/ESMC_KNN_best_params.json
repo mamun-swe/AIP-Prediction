@@ -1,0 +1,18 @@
+{
+    "metric": "cosine",
+    "n_neighbors": 20,
+    "weights": "distance",
+    "algorithm": "brute",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.6784,
+    "test_auc": 0.7147,
+    "accuracy": 0.7047,
+    "sensitivity": 0.4677,
+    "specificity": 0.8629,
+    "f1_score": 0.5591,
+    "mcc": 0.3651,
+    "best_trial": 55,
+    "n_trials": 100,
+    "dataset": "ESMC"
+}
