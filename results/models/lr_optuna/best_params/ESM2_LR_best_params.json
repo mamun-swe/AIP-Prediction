@@ -1,0 +1,20 @@
+{
+    "penalty": "l1",
+    "solver": "saga",
+    "C": 0.20243300794684416,
+    "max_iter": 2778,
+    "class_weight": "balanced",
+    "fit_intercept": false,
+    "tol": 4.522086070679116e-06,
+    "l1_ratio": "None",
+    "cv_auc": 0.7582,
+    "test_auc": 0.732,
+    "accuracy": 0.6925,
+    "sensitivity": 0.6654,
+    "specificity": 0.7107,
+    "f1_score": 0.6341,
+    "mcc": 0.3712,
+    "best_trial": 79,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

@@ -1,0 +1,20 @@
+{
+    "penalty": "l1",
+    "solver": "liblinear",
+    "C": 0.02793640480797433,
+    "max_iter": 224,
+    "class_weight": "None",
+    "fit_intercept": false,
+    "tol": 0.0009942782908794938,
+    "l1_ratio": "None",
+    "cv_auc": 0.5763,
+    "test_auc": 0.5196,
+    "accuracy": 0.4962,
+    "sensitivity": 0.5551,
+    "specificity": 0.4569,
+    "f1_score": 0.4687,
+    "mcc": 0.0118,
+    "best_trial": 91,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

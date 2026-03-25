@@ -1,0 +1,20 @@
+{
+    "penalty": "elasticnet",
+    "solver": "saga",
+    "l1_ratio": 0.6915235788158225,
+    "C": 0.22026153940943755,
+    "max_iter": 2219,
+    "class_weight": "None",
+    "fit_intercept": true,
+    "tol": 0.0003836082859200164,
+    "cv_auc": 0.5933,
+    "test_auc": 0.5525,
+    "accuracy": 0.5601,
+    "sensitivity": 0.4297,
+    "specificity": 0.6472,
+    "f1_score": 0.4388,
+    "mcc": 0.0775,
+    "best_trial": 85,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

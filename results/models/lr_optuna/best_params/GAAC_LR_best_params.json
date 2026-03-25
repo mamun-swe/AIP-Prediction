@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "newton-cg",
+    "C": 1.3713156628291254,
+    "max_iter": 3493,
+    "class_weight": "None",
+    "fit_intercept": false,
+    "tol": 0.004715464132875604,
+    "l1_ratio": "None",
+    "cv_auc": 0.534,
+    "test_auc": 0.5123,
+    "accuracy": 0.4779,
+    "sensitivity": 0.5741,
+    "specificity": 0.4137,
+    "f1_score": 0.4682,
+    "mcc": -0.0121,
+    "best_trial": 63,
+    "n_trials": 100,
+    "dataset": "GAAC"
+}

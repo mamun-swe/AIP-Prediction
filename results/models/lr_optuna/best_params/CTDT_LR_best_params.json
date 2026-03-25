@@ -1,0 +1,20 @@
+{
+    "penalty": "l1",
+    "solver": "saga",
+    "C": 0.11843453616979446,
+    "max_iter": 2097,
+    "class_weight": "None",
+    "fit_intercept": true,
+    "tol": 0.00783959017329294,
+    "l1_ratio": "None",
+    "cv_auc": 0.5544,
+    "test_auc": 0.5222,
+    "accuracy": 0.5921,
+    "sensitivity": 0.0418,
+    "specificity": 0.9594,
+    "f1_score": 0.0759,
+    "mcc": 0.003,
+    "best_trial": 87,
+    "n_trials": 100,
+    "dataset": "CTDT"
+}
