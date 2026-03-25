@@ -404,7 +404,7 @@ plt.subplots_adjust(left=0.02, right=0.98,
                     top=0.90, bottom=0.10)
 
 # ── Save ──────────────────────────────────────────────────────
-out_path = os.path.join(OUTPUT_DIR, "comparison_table.png")
+out_path = os.path.join(OUTPUT_DIR, "ml_comparison_table.png")
 fig.savefig(out_path, dpi=200, bbox_inches="tight",
             facecolor="white")
 plt.show()
