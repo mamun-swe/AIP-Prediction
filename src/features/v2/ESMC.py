@@ -34,10 +34,10 @@ print("✅ Libraries installed")
 # ============================================================
 from huggingface_hub import login
 
-HF_TOKEN = ""   # ← paste your token here
+# HF_TOKEN = ""   # ← paste your token here
 
-login(token=HF_TOKEN, add_to_git_credential=False)
-print("✅ HuggingFace login successful")
+# login(token=HF_TOKEN, add_to_git_credential=False)
+# print("✅ HuggingFace login successful")
 
 
 # ============================================================
