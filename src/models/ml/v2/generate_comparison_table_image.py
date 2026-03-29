@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 # BASE_DIR = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results"
 
 # Local:
-BASE_DIR   = "../../../results"
+BASE_DIR   = "../../../../results/comparison"
 
 OUTPUT_DIR = os.path.join(BASE_DIR, "comparison")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -418,7 +418,7 @@ plt.subplots_adjust(left=0.02, right=0.98,
 
 
 # ── Save ──────────────────────────────────────────────────────
-out_path = os.path.join(OUTPUT_DIR, "ml_comparison_table.png")
+out_path = os.path.join(OUTPUT_DIR, "ml_comparison_table_v2.png")
 fig.savefig(out_path, dpi=200, bbox_inches="tight",
             facecolor="white")
 plt.show()
