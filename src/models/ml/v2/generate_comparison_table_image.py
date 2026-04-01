@@ -24,7 +24,7 @@ warnings.filterwarnings("ignore")
 # BASE_DIR = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results"
 
 # Local:
-BASE_DIR   = "../../../results/comparison"
+BASE_DIR   = "../../../../results"
 
 OUTPUT_DIR = os.path.join(BASE_DIR, "comparison")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
