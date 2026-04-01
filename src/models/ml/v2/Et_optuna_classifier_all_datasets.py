@@ -55,7 +55,7 @@ FEATURE_DIR = "../../../../data/features/v2"
 RESULTS_DIR = "../../../../results/models/v2/et_optuna"
 FIGURES_DIR = "../../../../results/figures/models/v2/et_optuna"
 MODELS_DIR = "../../../../results/models/v2/et_optuna"
-PARAMS_DIR = "../../../../results/models/et_optuna/best_params"
+PARAMS_DIR = "../../../../results/models/v2/et_optuna/best_params"
 
 os.makedirs(RESULTS_DIR,  exist_ok=True)
 os.makedirs(FIGURES_DIR,  exist_ok=True)

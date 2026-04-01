@@ -1,0 +1,18 @@
+{
+    "metric": "manhattan",
+    "algorithm": "kd_tree",
+    "leaf_size": 71,
+    "n_neighbors": 18,
+    "weights": "distance",
+    "p": 2,
+    "cv_auc": 0.6857,
+    "test_auc": 0.6927,
+    "accuracy": 0.6799,
+    "sensitivity": 0.3973,
+    "specificity": 0.8679,
+    "f1_score": 0.4979,
+    "mcc": 0.3049,
+    "best_trial": 29,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

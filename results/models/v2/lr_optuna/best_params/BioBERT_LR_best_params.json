@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "saga",
+    "C": 0.039325331786273454,
+    "max_iter": 4262,
+    "class_weight": "None",
+    "fit_intercept": false,
+    "tol": 0.0002222231442727931,
+    "l1_ratio": "None",
+    "cv_auc": 0.7316,
+    "test_auc": 0.7327,
+    "accuracy": 0.6676,
+    "sensitivity": 0.6336,
+    "specificity": 0.6902,
+    "f1_score": 0.6036,
+    "mcc": 0.3195,
+    "best_trial": 85,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

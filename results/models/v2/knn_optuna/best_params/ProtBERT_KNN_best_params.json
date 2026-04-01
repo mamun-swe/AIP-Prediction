@@ -1,0 +1,18 @@
+{
+    "metric": "cosine",
+    "n_neighbors": 30,
+    "weights": "distance",
+    "algorithm": "brute",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.6047,
+    "test_auc": 0.6197,
+    "accuracy": 0.6594,
+    "sensitivity": 0.2637,
+    "specificity": 0.9226,
+    "f1_score": 0.3821,
+    "mcc": 0.2542,
+    "best_trial": 12,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

@@ -1,0 +1,19 @@
+{
+    "kernel": "poly",
+    "C": 0.04826331815965161,
+    "degree": 5,
+    "coef0": 0.9856051615727437,
+    "class_weight": "balanced",
+    "shrinking": true,
+    "gamma": "scale",
+    "cv_auc": 0.7383,
+    "test_auc": 0.7468,
+    "accuracy": 0.7237,
+    "sensitivity": 0.5753,
+    "specificity": 0.8223,
+    "f1_score": 0.6245,
+    "mcc": 0.4122,
+    "best_trial": 68,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

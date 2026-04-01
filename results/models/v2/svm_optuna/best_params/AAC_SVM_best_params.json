@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 1.7313372154799516,
+    "class_weight": "balanced",
+    "shrinking": true,
+    "gamma": "scale",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.6207,
+    "test_auc": 0.6188,
+    "accuracy": 0.5677,
+    "sensitivity": 0.5651,
+    "specificity": 0.5695,
+    "f1_score": 0.5108,
+    "mcc": 0.1319,
+    "best_trial": 15,
+    "n_trials": 100,
+    "dataset": "AAC"
+}

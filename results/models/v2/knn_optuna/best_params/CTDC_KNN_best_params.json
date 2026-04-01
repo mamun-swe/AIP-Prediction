@@ -1,0 +1,18 @@
+{
+    "metric": "manhattan",
+    "algorithm": "ball_tree",
+    "leaf_size": 91,
+    "n_neighbors": 25,
+    "weights": "distance",
+    "p": 2,
+    "cv_auc": 0.6405,
+    "test_auc": 0.6693,
+    "accuracy": 0.6334,
+    "sensitivity": 0.2192,
+    "specificity": 0.9089,
+    "f1_score": 0.3232,
+    "mcc": 0.1796,
+    "best_trial": 43,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

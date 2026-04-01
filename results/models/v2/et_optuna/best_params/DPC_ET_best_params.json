@@ -1,0 +1,23 @@
+{
+    "max_depth": 27,
+    "bootstrap": true,
+    "max_samples": 0.6551459744918486,
+    "max_leaf_nodes": 306,
+    "n_estimators": 478,
+    "criterion": "entropy",
+    "min_samples_split": 10,
+    "min_samples_leaf": 1,
+    "max_features": 1.0,
+    "class_weight": "balanced",
+    "min_impurity_decrease": 0.005155026457217483,
+    "cv_auc": 0.7724,
+    "test_auc": 0.7733,
+    "accuracy": 0.7346,
+    "sensitivity": 0.6336,
+    "specificity": 0.8018,
+    "f1_score": 0.656,
+    "mcc": 0.4412,
+    "best_trial": 94,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

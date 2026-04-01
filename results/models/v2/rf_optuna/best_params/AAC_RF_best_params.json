@@ -1,0 +1,22 @@
+{
+    "max_depth": 23,
+    "bootstrap": true,
+    "max_samples": 0.5423375390325311,
+    "n_estimators": 227,
+    "criterion": "entropy",
+    "min_samples_split": 5,
+    "min_samples_leaf": 1,
+    "max_features": 1.0,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.005003880304873979,
+    "cv_auc": 0.8206,
+    "test_auc": 0.8185,
+    "accuracy": 0.7962,
+    "sensitivity": 0.6575,
+    "specificity": 0.8884,
+    "f1_score": 0.7205,
+    "mcc": 0.5688,
+    "best_trial": 70,
+    "n_trials": 100,
+    "dataset": "AAC"
+}

@@ -1,0 +1,19 @@
+{
+    "kernel": "poly",
+    "C": 545.4268658498451,
+    "degree": 5,
+    "coef0": -0.6436331115138182,
+    "class_weight": "balanced",
+    "shrinking": true,
+    "gamma": 0.3251512590305264,
+    "cv_auc": 0.6983,
+    "test_auc": 0.7163,
+    "accuracy": 0.4378,
+    "sensitivity": 0.9589,
+    "specificity": 0.0911,
+    "f1_score": 0.5767,
+    "mcc": 0.0953,
+    "best_trial": 60,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

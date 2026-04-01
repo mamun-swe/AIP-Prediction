@@ -1,0 +1,23 @@
+{
+    "max_depth": 22,
+    "bootstrap": false,
+    "max_leaf_nodes": 188,
+    "n_estimators": 202,
+    "criterion": "log_loss",
+    "min_samples_split": 12,
+    "min_samples_leaf": 5,
+    "max_features": 1.0,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.0012988610245584747,
+    "max_samples": "None",
+    "cv_auc": 0.822,
+    "test_auc": 0.8181,
+    "accuracy": 0.7962,
+    "sensitivity": 0.6096,
+    "specificity": 0.9203,
+    "f1_score": 0.705,
+    "mcc": 0.5711,
+    "best_trial": 94,
+    "n_trials": 100,
+    "dataset": "AAC"
+}

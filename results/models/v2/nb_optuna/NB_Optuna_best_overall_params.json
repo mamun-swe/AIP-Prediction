@@ -1,0 +1,9 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.23928914141882496,
+    "binarize": 0.49951893883895954,
+    "class_prior_pos": 0.6443450732861411,
+    "dataset": "DPC",
+    "test_auc": 0.7769,
+    "cv_auc": 0.7664
+}

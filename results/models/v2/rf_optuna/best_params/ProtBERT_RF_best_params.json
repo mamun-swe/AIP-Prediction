@@ -1,0 +1,22 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.7088406647325926,
+    "n_estimators": 371,
+    "criterion": "entropy",
+    "min_samples_split": 14,
+    "min_samples_leaf": 2,
+    "max_features": 1.0,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.006328825644675826,
+    "max_depth": "None",
+    "cv_auc": 0.6245,
+    "test_auc": 0.6538,
+    "accuracy": 0.6676,
+    "sensitivity": 0.2603,
+    "specificity": 0.9385,
+    "f1_score": 0.3848,
+    "mcc": 0.2798,
+    "best_trial": 74,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

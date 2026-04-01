@@ -1,0 +1,17 @@
+{
+    "n_estimators": 460,
+    "max_depth": 3,
+    "learning_rate": 0.056651549888738946,
+    "subsample": 0.7455657031175384,
+    "colsample_bytree": 0.43013175924972397,
+    "colsample_bylevel": 0.5320581128069688,
+    "min_child_weight": 4,
+    "gamma": 1.7695218640536217,
+    "reg_alpha": 1.8324664105237207,
+    "reg_lambda": 0.1172690969134061,
+    "scale_pos_weight": 1.9488514782726094,
+    "grow_policy": "lossguide",
+    "dataset": "CTDC",
+    "test_auc": 0.8204,
+    "cv_auc": 0.8107
+}

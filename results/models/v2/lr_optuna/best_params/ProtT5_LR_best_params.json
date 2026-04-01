@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "liblinear",
+    "C": 0.004511980169981691,
+    "max_iter": 2256,
+    "class_weight": "balanced",
+    "fit_intercept": false,
+    "tol": 1.1929479442416498e-05,
+    "l1_ratio": "None",
+    "cv_auc": 0.7043,
+    "test_auc": 0.7382,
+    "accuracy": 0.6648,
+    "sensitivity": 0.6712,
+    "specificity": 0.6606,
+    "f1_score": 0.6154,
+    "mcc": 0.3256,
+    "best_trial": 72,
+    "n_trials": 100,
+    "dataset": "ProtT5"
+}

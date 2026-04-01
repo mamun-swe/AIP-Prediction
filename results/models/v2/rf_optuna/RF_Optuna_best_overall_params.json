@@ -1,0 +1,15 @@
+{
+    "max_depth": 14,
+    "bootstrap": true,
+    "max_samples": 0.909290198833115,
+    "n_estimators": 238,
+    "criterion": "entropy",
+    "min_samples_split": 19,
+    "min_samples_leaf": 10,
+    "max_features": 0.7,
+    "class_weight": "balanced_subsample",
+    "min_impurity_decrease": 0.0017575187812497598,
+    "dataset": "CTDC",
+    "test_auc": 0.8245,
+    "cv_auc": 0.7993
+}

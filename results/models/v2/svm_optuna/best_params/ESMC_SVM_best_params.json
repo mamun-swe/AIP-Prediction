@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 2.7941404646413783,
+    "class_weight": null,
+    "shrinking": false,
+    "gamma": "auto",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.7419,
+    "test_auc": 0.7424,
+    "accuracy": 0.725,
+    "sensitivity": 0.5068,
+    "specificity": 0.8702,
+    "f1_score": 0.5956,
+    "mcc": 0.4111,
+    "best_trial": 73,
+    "n_trials": 100,
+    "dataset": "ESMC"
+}

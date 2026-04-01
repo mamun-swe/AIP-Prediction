@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 1.23523317836498,
+    "class_weight": "balanced",
+    "shrinking": false,
+    "gamma": 0.19668843423869264,
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.6294,
+    "test_auc": 0.6199,
+    "accuracy": 0.6306,
+    "sensitivity": 0.339,
+    "specificity": 0.8246,
+    "f1_score": 0.4231,
+    "mcc": 0.1875,
+    "best_trial": 77,
+    "n_trials": 100,
+    "dataset": "PAAC"
+}

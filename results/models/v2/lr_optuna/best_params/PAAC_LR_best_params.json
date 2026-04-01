@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "liblinear",
+    "C": 0.000467331823419684,
+    "max_iter": 3851,
+    "class_weight": "balanced",
+    "fit_intercept": true,
+    "tol": 9.572676788442446e-05,
+    "l1_ratio": "None",
+    "cv_auc": 0.5873,
+    "test_auc": 0.564,
+    "accuracy": 0.5376,
+    "sensitivity": 0.6096,
+    "specificity": 0.4897,
+    "f1_score": 0.513,
+    "mcc": 0.0978,
+    "best_trial": 92,
+    "n_trials": 100,
+    "dataset": "PAAC"
+}

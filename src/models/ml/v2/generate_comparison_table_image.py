@@ -24,69 +24,69 @@ warnings.filterwarnings("ignore")
 # BASE_DIR = "/content/drive/MyDrive/Colab Notebooks/AIP Prediction/results"
 
 # Local:
-BASE_DIR   = "../../../../results/comparison"
+BASE_DIR   = "../../../results/comparison"
 
 OUTPUT_DIR = os.path.join(BASE_DIR, "comparison")
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 CLASSIFIERS = {
     "DT"  : {
-        "baseline_folder": "models/decision_tree",
-        "optuna_folder"  : "models/dt_optuna",
+        "baseline_folder": "models/v2/decision_tree",
+        "optuna_folder"  : "models/v2/dt_optuna",
         "baseline_file"  : "DT_all_results_summary.csv",
         "optuna_file"    : "DT_Optuna_all_results_summary.csv",
     },
     "RF"  : {
-        "baseline_folder": "models/random_forest",
-        "optuna_folder"  : "models/rf_optuna",
+        "baseline_folder": "models/v2/random_forest",
+        "optuna_folder"  : "models/v2/rf_optuna",
         "baseline_file"  : "RF_all_results_summary.csv",
         "optuna_file"    : "RF_Optuna_all_results_summary.csv",
     },
     "XGB" : {
-        "baseline_folder": "models/xgboost",
-        "optuna_folder"  : "models/xgb_optuna",
+        "baseline_folder": "models/v2/xgboost",
+        "optuna_folder"  : "models/v2/xgb_optuna",
         "baseline_file"  : "XGB_all_results_summary.csv",
         "optuna_file"    : "XGB_Optuna_all_results_summary.csv",
     },
     "KNN" : {
-        "baseline_folder": "models/knn",
-        "optuna_folder"  : "models/knn_optuna",
+        "baseline_folder": "models/v2/knn",
+        "optuna_folder"  : "models/v2/knn_optuna",
         "baseline_file"  : "KNN_all_results_summary.csv",
         "optuna_file"    : "KNN_Optuna_all_results_summary.csv",
     },
     "SVM" : {
-        "baseline_folder": "models/svm",
-        "optuna_folder"  : "models/svm_optuna",
+        "baseline_folder": "models/v2/svm",
+        "optuna_folder"  : "models/v2/svm_optuna",
         "baseline_file"  : "SVM_all_results_summary.csv",
         "optuna_file"    : "SVM_Optuna_all_results_summary.csv",
     },
     "ET"  : {
-        "baseline_folder": "models/extra_trees",
-        "optuna_folder"  : "models/et_optuna",
+        "baseline_folder": "models/v2/extra_trees",
+        "optuna_folder"  : "models/v2/et_optuna",
         "baseline_file"  : "ET_all_results_summary.csv",
         "optuna_file"    : "ET_Optuna_all_results_summary.csv",
     },
     "LGBM": {
-        "baseline_folder": "models/lightgbm",
-        "optuna_folder"  : "models/lgbm_optuna",
+        "baseline_folder": "models/v2/lightgbm",
+        "optuna_folder"  : "models/v2/lgbm_optuna",
         "baseline_file"  : "LGBM_all_results_summary.csv",
         "optuna_file"    : "LGBM_Optuna_all_results_summary.csv",
     },
     "LR"  : {
-        "baseline_folder": "models/logistic_regression",
-        "optuna_folder"  : "models/lr_optuna",
+        "baseline_folder": "models/v2/logistic_regression",
+        "optuna_folder"  : "models/v2/lr_optuna",
         "baseline_file"  : "LR_all_results_summary.csv",
         "optuna_file"    : "LR_Optuna_all_results_summary.csv",
     },
     "CB"  : {
-        "baseline_folder": "models/catboost",
-        "optuna_folder"  : "models/cb_optuna",
+        "baseline_folder": "models/v2/catboost",
+        "optuna_folder"  : "models/v2/cb_optuna",
         "baseline_file"  : "CB_all_results_summary.csv",
         "optuna_file"    : "CB_Optuna_all_results_summary.csv",
     },
     "NB"  : {
-        "baseline_folder": "models/naive_bayes",
-        "optuna_folder"  : "models/nb_optuna",
+        "baseline_folder": "models/v2/naive_bayes",
+        "optuna_folder"  : "models/v2/nb_optuna",
         "baseline_file"  : "NB_all_results_summary.csv",
         "optuna_file"    : "NB_Optuna_all_results_summary.csv",
     },

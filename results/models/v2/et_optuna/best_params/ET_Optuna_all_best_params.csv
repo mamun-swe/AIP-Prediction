@@ -1,0 +1,12 @@
+Dataset,max_depth,bootstrap,max_leaf_nodes,n_estimators,criterion,min_samples_split,min_samples_leaf,max_features,class_weight,min_impurity_decrease,max_samples,CV_AUC,Test_AUC
+AAC,22.0,False,188.0,202,log_loss,12,5,1.0,,0.0012988610245584747,,0.822,0.8181
+DPC,27.0,True,306.0,478,entropy,10,1,1.0,balanced,0.005155026457217483,0.6551459744918486,0.7724,0.7733
+CTDC,,True,,348,entropy,13,1,1.0,balanced_subsample,0.0026846094548406,0.8029721277492256,0.7886,0.8117
+CTDT,,False,42.0,446,gini,14,4,1.0,,0.0010338638573868055,,0.7934,0.8064
+GAAC,,False,,472,gini,9,16,1.0,,0.0004118919116499808,,0.7836,0.7902
+PAAC,,True,,142,entropy,7,1,1.0,balanced_subsample,0.0017015289908465694,0.8876163290612189,0.7886,0.7782
+ProtBERT,26.0,False,,408,log_loss,4,4,0.3,,0.0005143429457277722,,0.6192,0.66
+ProtT5,24.0,False,,445,entropy,15,11,1.0,,0.0014024580087469477,,0.7327,0.7502
+ESM2,22.0,False,,462,gini,11,9,0.7,balanced,0.001034376971337872,,0.7102,0.7295
+BioBERT,26.0,False,283.0,465,entropy,2,3,0.7,,0.0009714708066167813,,0.7463,0.7575
+ESMC,,False,199.0,311,log_loss,9,7,1.0,,0.0020759919469636435,,0.716,0.723

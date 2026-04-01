@@ -1,0 +1,16 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.8023339635593604,
+    "binarize": 0.2961784375437159,
+    "class_prior_pos": 0.5735320904116581,
+    "cv_auc": 0.6808,
+    "test_auc": 0.6973,
+    "accuracy": 0.6744,
+    "sensitivity": 0.5959,
+    "specificity": 0.7267,
+    "f1_score": 0.5939,
+    "mcc": 0.3222,
+    "best_trial": 81,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

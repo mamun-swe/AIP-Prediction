@@ -1,0 +1,16 @@
+{
+    "max_depth": 22,
+    "bootstrap": false,
+    "max_leaf_nodes": 188,
+    "n_estimators": 202,
+    "criterion": "log_loss",
+    "min_samples_split": 12,
+    "min_samples_leaf": 5,
+    "max_features": 1.0,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.0012988610245584747,
+    "max_samples": "None",
+    "dataset": "AAC",
+    "test_auc": 0.8181,
+    "cv_auc": 0.822
+}

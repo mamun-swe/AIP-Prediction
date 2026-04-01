@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "newton-cg",
+    "C": 0.0012902632506281194,
+    "max_iter": 1119,
+    "class_weight": "None",
+    "fit_intercept": true,
+    "tol": 8.212589003960868e-06,
+    "l1_ratio": "None",
+    "cv_auc": 0.6444,
+    "test_auc": 0.6614,
+    "accuracy": 0.6662,
+    "sensitivity": 0.3596,
+    "specificity": 0.8702,
+    "f1_score": 0.4626,
+    "mcc": 0.2709,
+    "best_trial": 81,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

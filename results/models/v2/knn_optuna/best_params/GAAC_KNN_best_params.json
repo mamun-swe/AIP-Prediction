@@ -1,0 +1,18 @@
+{
+    "metric": "manhattan",
+    "algorithm": "kd_tree",
+    "leaf_size": 40,
+    "n_neighbors": 15,
+    "weights": "distance",
+    "p": 2,
+    "cv_auc": 0.6751,
+    "test_auc": 0.6386,
+    "accuracy": 0.6279,
+    "sensitivity": 0.274,
+    "specificity": 0.8633,
+    "f1_score": 0.3704,
+    "mcc": 0.1709,
+    "best_trial": 50,
+    "n_trials": 100,
+    "dataset": "GAAC"
+}

@@ -1,0 +1,18 @@
+{
+    "metric": "minkowski",
+    "algorithm": "ball_tree",
+    "p": 1,
+    "leaf_size": 82,
+    "n_neighbors": 3,
+    "weights": "distance",
+    "cv_auc": 0.683,
+    "test_auc": 0.7011,
+    "accuracy": 0.6566,
+    "sensitivity": 0.4144,
+    "specificity": 0.8178,
+    "f1_score": 0.4909,
+    "mcc": 0.2547,
+    "best_trial": 18,
+    "n_trials": 100,
+    "dataset": "DPC"
+}

@@ -1,0 +1,13 @@
+{
+    "penalty": "elasticnet",
+    "solver": "saga",
+    "l1_ratio": 0.5960335537836029,
+    "C": 0.303477356308485,
+    "max_iter": 3228,
+    "class_weight": "balanced",
+    "fit_intercept": false,
+    "tol": 0.006488182096824385,
+    "dataset": "ESM2",
+    "test_auc": 0.7475,
+    "cv_auc": 0.755
+}

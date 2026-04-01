@@ -1,0 +1,18 @@
+{
+    "metric": "cosine",
+    "n_neighbors": 28,
+    "weights": "distance",
+    "algorithm": "brute",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.7113,
+    "test_auc": 0.7158,
+    "accuracy": 0.6963,
+    "sensitivity": 0.3938,
+    "specificity": 0.8975,
+    "f1_score": 0.5088,
+    "mcc": 0.3451,
+    "best_trial": 31,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

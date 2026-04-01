@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "liblinear",
+    "C": 0.008871840634018573,
+    "max_iter": 4472,
+    "class_weight": "balanced",
+    "fit_intercept": true,
+    "tol": 8.487860934696093e-06,
+    "l1_ratio": "None",
+    "cv_auc": 0.7265,
+    "test_auc": 0.7233,
+    "accuracy": 0.6539,
+    "sensitivity": 0.5822,
+    "specificity": 0.7016,
+    "f1_score": 0.5734,
+    "mcc": 0.2824,
+    "best_trial": 63,
+    "n_trials": 100,
+    "dataset": "ESMC"
+}

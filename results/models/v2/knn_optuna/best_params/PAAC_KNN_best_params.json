@@ -1,0 +1,18 @@
+{
+    "metric": "manhattan",
+    "algorithm": "brute",
+    "n_neighbors": 30,
+    "weights": "distance",
+    "p": 2,
+    "leaf_size": 30,
+    "cv_auc": 0.7156,
+    "test_auc": 0.7017,
+    "accuracy": 0.6731,
+    "sensitivity": 0.3425,
+    "specificity": 0.8929,
+    "f1_score": 0.4556,
+    "mcc": 0.2877,
+    "best_trial": 30,
+    "n_trials": 100,
+    "dataset": "PAAC"
+}

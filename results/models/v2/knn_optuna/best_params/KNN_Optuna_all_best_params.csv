@@ -1,0 +1,12 @@
+Dataset,metric,algorithm,p,leaf_size,n_neighbors,weights,CV_AUC,Test_AUC
+AAC,minkowski,kd_tree,1,100,30,distance,0.7441,0.7524
+DPC,minkowski,ball_tree,1,82,3,distance,0.683,0.7011
+CTDC,manhattan,ball_tree,2,91,25,distance,0.6405,0.6693
+CTDT,manhattan,ball_tree,2,72,25,distance,0.6651,0.6826
+GAAC,manhattan,kd_tree,2,40,15,distance,0.6751,0.6386
+PAAC,manhattan,brute,2,30,30,distance,0.7156,0.7017
+ProtBERT,cosine,brute,2,30,30,distance,0.6047,0.6197
+ProtT5,manhattan,kd_tree,2,71,18,distance,0.6857,0.6927
+ESM2,cosine,brute,2,30,21,distance,0.6825,0.6755
+BioBERT,cosine,brute,2,30,28,distance,0.7113,0.7158
+ESMC,cosine,brute,2,30,28,distance,0.6939,0.6997

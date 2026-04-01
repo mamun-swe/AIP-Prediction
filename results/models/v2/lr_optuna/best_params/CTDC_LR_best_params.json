@@ -1,0 +1,20 @@
+{
+    "penalty": "elasticnet",
+    "solver": "saga",
+    "l1_ratio": 0.9696048638251105,
+    "C": 0.029986361043087977,
+    "max_iter": 409,
+    "class_weight": "None",
+    "fit_intercept": false,
+    "tol": 1.8815531348690223e-06,
+    "cv_auc": 0.5597,
+    "test_auc": 0.5302,
+    "accuracy": 0.5239,
+    "sensitivity": 0.5548,
+    "specificity": 0.5034,
+    "f1_score": 0.4821,
+    "mcc": 0.0571,
+    "best_trial": 25,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

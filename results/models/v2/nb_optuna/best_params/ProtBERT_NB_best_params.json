@@ -1,0 +1,16 @@
+{
+    "nb_type": "bernoulli",
+    "alpha": 0.010021339102702644,
+    "binarize": 0.3127566501023742,
+    "class_prior_pos": 0.4681284888547553,
+    "cv_auc": 0.589,
+    "test_auc": 0.5583,
+    "accuracy": 0.5718,
+    "sensitivity": 0.4281,
+    "specificity": 0.6674,
+    "f1_score": 0.444,
+    "mcc": 0.0969,
+    "best_trial": 81,
+    "n_trials": 100,
+    "dataset": "ProtBERT"
+}

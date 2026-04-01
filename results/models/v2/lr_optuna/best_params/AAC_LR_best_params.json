@@ -1,0 +1,20 @@
+{
+    "penalty": "l2",
+    "solver": "lbfgs",
+    "C": 0.012660539425408096,
+    "max_iter": 4180,
+    "class_weight": "balanced",
+    "fit_intercept": false,
+    "tol": 0.009969069558221856,
+    "l1_ratio": "None",
+    "cv_auc": 0.5809,
+    "test_auc": 0.5714,
+    "accuracy": 0.5349,
+    "sensitivity": 0.5582,
+    "specificity": 0.5194,
+    "f1_score": 0.4895,
+    "mcc": 0.076,
+    "best_trial": 49,
+    "n_trials": 100,
+    "dataset": "AAC"
+}

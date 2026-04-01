@@ -1,0 +1,22 @@
+{
+    "max_depth": 16,
+    "bootstrap": false,
+    "n_estimators": 476,
+    "criterion": "entropy",
+    "min_samples_split": 12,
+    "min_samples_leaf": 1,
+    "max_features": 0.3,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.0043103482584465795,
+    "max_samples": "None",
+    "cv_auc": 0.7402,
+    "test_auc": 0.7597,
+    "accuracy": 0.7278,
+    "sensitivity": 0.4795,
+    "specificity": 0.8929,
+    "f1_score": 0.5846,
+    "mcc": 0.418,
+    "best_trial": 97,
+    "n_trials": 100,
+    "dataset": "BioBERT"
+}

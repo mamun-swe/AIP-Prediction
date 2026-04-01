@@ -1,0 +1,19 @@
+{
+    "kernel": "rbf",
+    "C": 2.0140980500235193,
+    "class_weight": "balanced",
+    "shrinking": true,
+    "gamma": "scale",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.5817,
+    "test_auc": 0.5758,
+    "accuracy": 0.539,
+    "sensitivity": 0.5753,
+    "specificity": 0.5148,
+    "f1_score": 0.4993,
+    "mcc": 0.0884,
+    "best_trial": 53,
+    "n_trials": 100,
+    "dataset": "CTDC"
+}

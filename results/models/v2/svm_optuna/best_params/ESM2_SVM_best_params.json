@@ -1,0 +1,19 @@
+{
+    "kernel": "linear",
+    "C": 0.00815008193612546,
+    "class_weight": null,
+    "shrinking": false,
+    "gamma": "scale",
+    "degree": 3,
+    "coef0": 0.0,
+    "cv_auc": 0.7556,
+    "test_auc": 0.754,
+    "accuracy": 0.71,
+    "sensitivity": 0.5171,
+    "specificity": 0.8383,
+    "f1_score": 0.5875,
+    "mcc": 0.3785,
+    "best_trial": 60,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}

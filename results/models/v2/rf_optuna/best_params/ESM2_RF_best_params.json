@@ -1,0 +1,22 @@
+{
+    "bootstrap": true,
+    "max_samples": 0.8994812499317606,
+    "n_estimators": 392,
+    "criterion": "log_loss",
+    "min_samples_split": 5,
+    "min_samples_leaf": 1,
+    "max_features": 0.3,
+    "class_weight": "None",
+    "min_impurity_decrease": 0.005727214714644904,
+    "max_depth": "None",
+    "cv_auc": 0.7121,
+    "test_auc": 0.7299,
+    "accuracy": 0.7114,
+    "sensitivity": 0.4075,
+    "specificity": 0.9134,
+    "f1_score": 0.5301,
+    "mcc": 0.3828,
+    "best_trial": 97,
+    "n_trials": 100,
+    "dataset": "ESM2"
+}
