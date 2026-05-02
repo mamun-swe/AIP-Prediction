@@ -1,0 +1,12 @@
+[2026-05-01 23:22:31] INFO 04_train_model — Loading final features...
+[2026-05-01 23:22:31] INFO 04_train_model — Train: X=(2509, 266), y=(2509,), pos=1000, neg=1509
+[2026-05-01 23:22:31] INFO 04_train_model — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:22:31] INFO 04_train_model — Training stacking ensemble...
+[2026-05-01 23:22:31] INFO 04_train_model —   Base learners: XGBoost, LightGBM, SVM
+[2026-05-01 23:22:31] INFO 04_train_model —   Meta-learner : Logistic Regression
+[2026-05-01 23:22:31] INFO 04_train_model —   Optuna trials: 50 per learner
+[2026-05-01 23:22:31] INFO 04_train_model — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:45:23] INFO 04_train_model — Best hyperparameters saved → results/models/best_params.json
+[2026-05-01 23:45:23] INFO 04_train_model — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:45:23] INFO 04_train_model — Running 10-fold cross-validation evaluation...
+[2026-05-01 23:45:23] INFO 04_train_model — (This trains a fresh ensemble in each fold — will take time)

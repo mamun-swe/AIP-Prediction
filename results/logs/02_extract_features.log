@@ -1,0 +1,35 @@
+[2026-05-01 23:14:01] INFO 02_extract_features — Train: 2509 sequences
+[2026-05-01 23:14:01] INFO 02_extract_features — Test : 628 sequences
+[2026-05-01 23:14:01] INFO 02_extract_features — ──────────────────────────────────────────────────
+[2026-05-01 23:14:01] INFO 02_extract_features — STEP 1: Hand-crafted features
+[2026-05-01 23:14:01] INFO 02_extract_features — Hand-crafted feature dim: 642
+[2026-05-01 23:14:01] INFO 02_extract_features — Feature groups: ['AAC', 'DPC', 'PAAC', 'GAAC', 'CTDC', 'CTDT', 'CTDD', 'QSO']
+[2026-05-01 23:14:01] INFO 02_extract_features — Extracting hand-crafted features for TRAIN set...
+[2026-05-01 23:14:02] INFO 02_extract_features — Extracting hand-crafted features for TEST set...
+[2026-05-01 23:14:02] INFO 02_extract_features — Train HC: (2509, 642) | Test HC: (628, 642)
+[2026-05-01 23:14:02] INFO 02_extract_features — ──────────────────────────────────────────────────
+[2026-05-01 23:14:02] INFO 02_extract_features — STEP 2: PLM embeddings (this requires fair-esm installed)
+[2026-05-01 23:14:02] INFO 02_extract_features —   If fair-esm is not installed, run:
+[2026-05-01 23:14:02] INFO 02_extract_features —   pip install fair-esm
+[2026-05-01 23:14:02] INFO 02_extract_features — Extracting PLM embeddings for TRAIN set...
+[2026-05-01 23:20:37] INFO 02_extract_features — Train: 2509 sequences
+[2026-05-01 23:20:37] INFO 02_extract_features — Test : 628 sequences
+[2026-05-01 23:20:37] INFO 02_extract_features — ──────────────────────────────────────────────────
+[2026-05-01 23:20:37] INFO 02_extract_features — STEP 1: Hand-crafted features
+[2026-05-01 23:20:37] INFO 02_extract_features — Hand-crafted feature dim: 642
+[2026-05-01 23:20:37] INFO 02_extract_features — Feature groups: ['AAC', 'DPC', 'PAAC', 'GAAC', 'CTDC', 'CTDT', 'CTDD', 'QSO']
+[2026-05-01 23:20:37] INFO 02_extract_features — Extracting hand-crafted features for TRAIN set...
+[2026-05-01 23:20:38] INFO 02_extract_features — Extracting hand-crafted features for TEST set...
+[2026-05-01 23:20:38] INFO 02_extract_features — Train HC: (2509, 642) | Test HC: (628, 642)
+[2026-05-01 23:20:38] INFO 02_extract_features — ──────────────────────────────────────────────────
+[2026-05-01 23:20:38] INFO 02_extract_features — STEP 2: PLM embeddings (this requires fair-esm installed)
+[2026-05-01 23:20:38] INFO 02_extract_features —   If fair-esm is not installed, run:
+[2026-05-01 23:20:38] INFO 02_extract_features —   pip install fair-esm
+[2026-05-01 23:20:38] INFO 02_extract_features — Extracting PLM embeddings for TRAIN set...
+[2026-05-01 23:21:18] INFO 02_extract_features — Extracting PLM embeddings for TEST set...
+[2026-05-01 23:21:25] INFO 02_extract_features — Train PLM: (2509, 800) | Test PLM: (628, 800)
+[2026-05-01 23:21:25] INFO 02_extract_features — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:21:25] INFO 02_extract_features — Feature extraction complete.
+[2026-05-01 23:21:25] INFO 02_extract_features —   HC  → results/features/handcrafted/
+[2026-05-01 23:21:25] INFO 02_extract_features —   PLM → results/features/plm/
+[2026-05-01 23:21:25] INFO 02_extract_features — Next step: python scripts/03_select_features.py

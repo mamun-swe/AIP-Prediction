@@ -1,0 +1,50 @@
+project:
+  name: "AIP-ML-Stack"
+  version: "1.0.0"
+  seed: 42
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  features_dir: "data/features"
+  min_length: 5
+  max_length: 40
+  cdhit_threshold: 0.80
+  test_size: 0.20
+  valid_amino_acids: "ACDEFGHIKLMNPQRSTVWY"
+
+features:
+  handcrafted:
+    aac: true
+    dpc: true
+    paac: true
+    ctdc: true
+    ctdt: true
+    ctdd: true
+    gaac: true
+    qso: true
+  plm:
+    esm2_small:
+      enabled: true
+      model: "facebook/esm2_t6_33M_UR50D"
+      dim: 480
+    esm2_medium:
+      enabled: true
+      model: "facebook/esm2_t12_35M_UR50D"
+      dim: 640
+    protbert:
+      enabled: false
+      model: "Rostlab/prot_bert_bfd"
+      dim: 1024
+
+selection:
+  variance_threshold: 0.01
+  correlation_threshold: 0.95
+  rfecv_min_features: 100
+  scoring: "matthews_corrcoef"
+
+model:
+  cv_folds: 10
+  optuna_trials: 100
+
+results_dir: "results"

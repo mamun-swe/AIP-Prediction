@@ -1,0 +1,16 @@
+[2026-05-01 23:22:17] INFO 03_select_features — Train: 2509 | pos=1000 | neg=1509
+[2026-05-01 23:22:17] INFO 03_select_features — Test : 628  | pos=250 | neg=378
+[2026-05-01 23:22:17] INFO 03_select_features — Loading hand-crafted features...
+[2026-05-01 23:22:17] INFO 03_select_features —   HC train: (2509, 642), test: (628, 642)
+[2026-05-01 23:22:17] INFO 03_select_features — Loading PLM features...
+[2026-05-01 23:22:17] INFO 03_select_features —   PLM train: (2509, 800), test: (628, 800)
+[2026-05-01 23:22:17] INFO 03_select_features — Total feature names: 1442
+[2026-05-01 23:22:17] INFO 03_select_features — ──────────────────────────────────────────────────
+[2026-05-01 23:22:17] INFO 03_select_features — Fusing and selecting features (target: 500)...
+[2026-05-01 23:22:20] INFO 03_select_features — Final shapes — Train: (2509, 266), Test: (628, 266)
+[2026-05-01 23:22:20] INFO 03_select_features — Selected feature names saved.
+[2026-05-01 23:22:20] INFO 03_select_features — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:22:20] INFO 03_select_features — Feature selection complete.
+[2026-05-01 23:22:20] INFO 03_select_features —   Train: results/features/fused/train_final.npz
+[2026-05-01 23:22:20] INFO 03_select_features —   Test : results/features/fused/test_final.npz
+[2026-05-01 23:22:20] INFO 03_select_features — Next step: python scripts/04_train_model.py

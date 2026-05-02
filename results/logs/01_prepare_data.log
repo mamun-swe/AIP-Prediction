@@ -1,0 +1,18 @@
+[2026-05-01 23:11:57] INFO 01_prepare_data — Mode: fasta — loading from FASTA files...
+[2026-05-01 23:12:06] INFO 01_prepare_data — Splitting into train/test...
+[2026-05-01 23:12:06] INFO 01_prepare_data — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:12:06] INFO 01_prepare_data — Dataset preparation complete.
+[2026-05-01 23:12:06] INFO 01_prepare_data —   Processed : data/processed/dataset.csv
+[2026-05-01 23:12:06] INFO 01_prepare_data —   Train     : data/splits/train.csv (2509 samples)
+[2026-05-01 23:12:06] INFO 01_prepare_data —   Test      : data/splits/test.csv  (628 samples)
+[2026-05-01 23:12:06] INFO 01_prepare_data — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:12:06] INFO 01_prepare_data — Next step: python scripts/02_extract_features.py
+[2026-05-01 23:13:36] INFO 01_prepare_data — Mode: fasta — loading from FASTA files...
+[2026-05-01 23:13:46] INFO 01_prepare_data — Splitting into train/test...
+[2026-05-01 23:13:46] INFO 01_prepare_data — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:13:46] INFO 01_prepare_data — Dataset preparation complete.
+[2026-05-01 23:13:46] INFO 01_prepare_data —   Processed : data/processed/dataset.csv
+[2026-05-01 23:13:46] INFO 01_prepare_data —   Train     : data/splits/train.csv (2509 samples)
+[2026-05-01 23:13:46] INFO 01_prepare_data —   Test      : data/splits/test.csv  (628 samples)
+[2026-05-01 23:13:46] INFO 01_prepare_data — ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+[2026-05-01 23:13:46] INFO 01_prepare_data — Next step: python scripts/02_extract_features.py

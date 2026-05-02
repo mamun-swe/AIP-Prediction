@@ -1,0 +1,390 @@
+[2026-05-02 02:14:22] INFO 06_validate_all — ============================================================
+[2026-05-02 02:14:22] INFO 06_validate_all — AIP-ML-Stack — Comprehensive Validation Suite
+[2026-05-02 02:14:22] INFO 06_validate_all — ============================================================
+[2026-05-02 02:14:22] INFO 06_validate_all — 
+[1] Hand-crafted Feature Extractors
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — AAC shape = (20,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — AAC sums to 1 (1.000000)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — AAC has no NaN
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — DPC shape = (400,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — DPC sums to 1 (1.000000)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — PAAC shape = (30,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — PAAC no NaN
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — GAAC shape = (5,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — GAAC sums to 1 (1.000000)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — CTDC shape = (21,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — CTDC no NaN
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — CTDT shape = (21,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — CTDD shape = (105,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✗ FAIL — QSO shape = (40,)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✗ FAIL — Combined dim = 642 (expected 652)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Combined no NaN
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Combined no Inf
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✗ FAIL — Batch shape = (14, 642)
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Batch no NaN
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✗ FAIL — Feature name count = 642
+[2026-05-02 02:14:22] INFO 06_validate_all — 
+[2] Short Sequence Edge Cases
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('ACDEF')
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('KLMNO')
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('ACDEFG')
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('KLMNPQ')
+[2026-05-02 02:14:22] INFO 06_validate_all — 
+[3] Preprocessing & Cleaning
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Valid seq accepted
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Too short rejected
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Non-std AA rejected
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Too long rejected
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — Cleaning reduced rows: 18 → 14
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≥ 5 aa
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≤ 40 aa
+[2026-05-02 02:14:22] INFO 06_validate_all —   ✓ PASS — No duplicate sequences
+[2026-05-02 02:14:22] INFO 06_validate_all — 
+[4] Train/Test Split Stratification
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — No samples lost: 56+14=70
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Class ratio similar: train=0.50 test=0.50
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✗ FAIL — No train-test overlap (9 duplicates)
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Save/load round-trip preserves sizes
+[2026-05-02 02:14:24] INFO 06_validate_all — 
+[5] Feature Fusion & Selection Pipeline
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Train sample count preserved (80)
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Test sample count preserved (20)
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Same features for train/test (20)
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Final dim ≤ 20 (20)
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Train final no NaN
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Test final no NaN
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Pipeline marked as fitted
+[2026-05-02 02:14:24] INFO 06_validate_all —   ✓ PASS — Feature save/load round-trip correct
+[2026-05-02 02:14:24] INFO 06_validate_all — 
+[6] Metric Computation
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Perfect accuracy = 1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Perfect sensitivity = 1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Perfect specificity = 1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Perfect MCC = 1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Perfect AUC = 1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Bad accuracy = 0.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Bad MCC = -1.0
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Random MCC in [-1,1]: 0.030
+[2026-05-02 02:14:26] INFO 06_validate_all —   ✓ PASS — Random AUC in [0,1]: 0.507
+[2026-05-02 02:14:27] INFO 06_validate_all —   ✓ PASS — Bootstrap CI has 'accuracy' key
+[2026-05-02 02:14:27] INFO 06_validate_all —   ✓ PASS — CI lower ≤ upper: (1.0, 1.0)
+[2026-05-02 02:14:27] INFO 06_validate_all — 
+[7] Stacking Ensemble Smoke Test (mock data)
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Ensemble fitted flag set
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — predict_proba shape = (100, 2)
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Probabilities sum to 1
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — All probabilities in [0,1]
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — predict shape = (100,)
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — predict outputs only 0/1: [0 1]
+[2026-05-02 02:14:29] INFO 06_validate_all — 
+[8] Data Leakage Prevention
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Selector has indices (fitted on train only)
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Same columns for train & test: 10
+[2026-05-02 02:14:29] INFO 06_validate_all — 
+============================================================
+[2026-05-02 02:14:29] INFO 06_validate_all — VALIDATION SUMMARY
+[2026-05-02 02:14:29] INFO 06_validate_all — ============================================================
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✗ FAIL — Hand-crafted features
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Short sequence edge cases
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Preprocessing & cleaning
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✗ FAIL — Train/test split
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Feature selection pipeline
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Metric computation
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Stacking ensemble smoke test
+[2026-05-02 02:14:29] INFO 06_validate_all —   ✓ PASS — Data leakage prevention
+[2026-05-02 02:14:29] INFO 06_validate_all — 
+  Result: 6/8 tests passed
+[2026-05-02 02:14:29] ERROR 06_validate_all —   Some tests failed — fix issues before training.
+[2026-05-02 02:15:08] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:08] INFO 06_validate_all — AIP-ML-Stack — Comprehensive Validation Suite
+[2026-05-02 02:15:08] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:08] INFO 06_validate_all — 
+[1] Hand-crafted Feature Extractors
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — AAC shape = (20,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — AAC sums to 1 (1.000000)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — AAC has no NaN
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — DPC shape = (400,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — DPC sums to 1 (1.000000)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — PAAC shape = (30,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — PAAC no NaN
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — GAAC shape = (5,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — GAAC sums to 1 (1.000000)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — CTDC shape = (21,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — CTDC no NaN
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — CTDT shape = (21,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — CTDD shape = (105,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — QSO shape = (40,)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Combined dim = 642 (expected 642)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Combined no NaN
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Combined no Inf
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Batch shape = (14, 642)
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Batch no NaN
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Feature name count = 642
+[2026-05-02 02:15:08] INFO 06_validate_all — 
+[2] Short Sequence Edge Cases
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('ACDEF')
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('KLMNO')
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('ACDEFG')
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('KLMNPQ')
+[2026-05-02 02:15:08] INFO 06_validate_all — 
+[3] Preprocessing & Cleaning
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Valid seq accepted
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Too short rejected
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Non-std AA rejected
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Too long rejected
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — Cleaning reduced rows: 18 → 14
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≥ 5 aa
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≤ 40 aa
+[2026-05-02 02:15:08] INFO 06_validate_all —   ✓ PASS — No duplicate sequences
+[2026-05-02 02:15:08] INFO 06_validate_all — 
+[4] Train/Test Split Stratification
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — No samples lost: 11+3=14
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✗ FAIL — Class ratio similar: train=0.55 test=0.33
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — No train-test overlap (0 duplicates)
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Save/load round-trip preserves sizes
+[2026-05-02 02:15:09] INFO 06_validate_all — 
+[5] Feature Fusion & Selection Pipeline
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Train sample count preserved (80)
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Test sample count preserved (20)
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Same features for train/test (20)
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Final dim ≤ 20 (20)
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Train final no NaN
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Test final no NaN
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Pipeline marked as fitted
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Feature save/load round-trip correct
+[2026-05-02 02:15:09] INFO 06_validate_all — 
+[6] Metric Computation
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Perfect accuracy = 1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Perfect sensitivity = 1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Perfect specificity = 1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Perfect MCC = 1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Perfect AUC = 1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Bad accuracy = 0.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Bad MCC = -1.0
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Random MCC in [-1,1]: 0.030
+[2026-05-02 02:15:09] INFO 06_validate_all —   ✓ PASS — Random AUC in [0,1]: 0.507
+[2026-05-02 02:15:10] INFO 06_validate_all —   ✓ PASS — Bootstrap CI has 'accuracy' key
+[2026-05-02 02:15:10] INFO 06_validate_all —   ✓ PASS — CI lower ≤ upper: (1.0, 1.0)
+[2026-05-02 02:15:10] INFO 06_validate_all — 
+[7] Stacking Ensemble Smoke Test (mock data)
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Ensemble fitted flag set
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — predict_proba shape = (100, 2)
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Probabilities sum to 1
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — All probabilities in [0,1]
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — predict shape = (100,)
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — predict outputs only 0/1: [0 1]
+[2026-05-02 02:15:11] INFO 06_validate_all — 
+[8] Data Leakage Prevention
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Selector has indices (fitted on train only)
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Same columns for train & test: 10
+[2026-05-02 02:15:11] INFO 06_validate_all — 
+============================================================
+[2026-05-02 02:15:11] INFO 06_validate_all — VALIDATION SUMMARY
+[2026-05-02 02:15:11] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Hand-crafted features
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Short sequence edge cases
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Preprocessing & cleaning
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✗ FAIL — Train/test split
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Feature selection pipeline
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Metric computation
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Stacking ensemble smoke test
+[2026-05-02 02:15:11] INFO 06_validate_all —   ✓ PASS — Data leakage prevention
+[2026-05-02 02:15:11] INFO 06_validate_all — 
+  Result: 7/8 tests passed
+[2026-05-02 02:15:11] ERROR 06_validate_all —   Some tests failed — fix issues before training.
+[2026-05-02 02:15:37] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:37] INFO 06_validate_all — AIP-ML-Stack — Comprehensive Validation Suite
+[2026-05-02 02:15:37] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:37] INFO 06_validate_all — 
+[1] Hand-crafted Feature Extractors
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — AAC shape = (20,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — AAC sums to 1 (1.000000)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — AAC has no NaN
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — DPC shape = (400,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — DPC sums to 1 (1.000000)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — PAAC shape = (30,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — PAAC no NaN
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — GAAC shape = (5,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — GAAC sums to 1 (1.000000)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — CTDC shape = (21,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — CTDC no NaN
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — CTDT shape = (21,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — CTDD shape = (105,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — QSO shape = (40,)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Combined dim = 642 (expected 642)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Combined no NaN
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Combined no Inf
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Batch shape = (14, 642)
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Batch no NaN
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Feature name count = 642
+[2026-05-02 02:15:37] INFO 06_validate_all — 
+[2] Short Sequence Edge Cases
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('ACDEF')
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('KLMNO')
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('ACDEFG')
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('KLMNPQ')
+[2026-05-02 02:15:37] INFO 06_validate_all — 
+[3] Preprocessing & Cleaning
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Valid seq accepted
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Too short rejected
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Non-std AA rejected
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Too long rejected
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — Cleaning reduced rows: 18 → 14
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≥ 5 aa
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≤ 40 aa
+[2026-05-02 02:15:37] INFO 06_validate_all —   ✓ PASS — No duplicate sequences
+[2026-05-02 02:15:37] INFO 06_validate_all — 
+[4] Train/Test Split Stratification
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — No samples lost: 11+3=14
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Class ratio similar: train=0.55 test=0.33
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — No train-test overlap (0 duplicates)
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Save/load round-trip preserves sizes
+[2026-05-02 02:15:38] INFO 06_validate_all — 
+[5] Feature Fusion & Selection Pipeline
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Train sample count preserved (80)
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Test sample count preserved (20)
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Same features for train/test (20)
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Final dim ≤ 20 (20)
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Train final no NaN
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Test final no NaN
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Pipeline marked as fitted
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Feature save/load round-trip correct
+[2026-05-02 02:15:38] INFO 06_validate_all — 
+[6] Metric Computation
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Perfect accuracy = 1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Perfect sensitivity = 1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Perfect specificity = 1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Perfect MCC = 1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Perfect AUC = 1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Bad accuracy = 0.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Bad MCC = -1.0
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Random MCC in [-1,1]: 0.030
+[2026-05-02 02:15:38] INFO 06_validate_all —   ✓ PASS — Random AUC in [0,1]: 0.507
+[2026-05-02 02:15:39] INFO 06_validate_all —   ✓ PASS — Bootstrap CI has 'accuracy' key
+[2026-05-02 02:15:39] INFO 06_validate_all —   ✓ PASS — CI lower ≤ upper: (1.0, 1.0)
+[2026-05-02 02:15:39] INFO 06_validate_all — 
+[7] Stacking Ensemble Smoke Test (mock data)
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Ensemble fitted flag set
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — predict_proba shape = (100, 2)
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Probabilities sum to 1
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — All probabilities in [0,1]
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — predict shape = (100,)
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — predict outputs only 0/1: [0 1]
+[2026-05-02 02:15:40] INFO 06_validate_all — 
+[8] Data Leakage Prevention
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Selector has indices (fitted on train only)
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Same columns for train & test: 10
+[2026-05-02 02:15:40] INFO 06_validate_all — 
+============================================================
+[2026-05-02 02:15:40] INFO 06_validate_all — VALIDATION SUMMARY
+[2026-05-02 02:15:40] INFO 06_validate_all — ============================================================
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Hand-crafted features
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Short sequence edge cases
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Preprocessing & cleaning
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Train/test split
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Feature selection pipeline
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Metric computation
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Stacking ensemble smoke test
+[2026-05-02 02:15:40] INFO 06_validate_all —   ✓ PASS — Data leakage prevention
+[2026-05-02 02:15:40] INFO 06_validate_all — 
+  Result: 8/8 tests passed
+[2026-05-02 02:15:40] INFO 06_validate_all —   All tests passed — pipeline is ready for training.
+[2026-05-02 02:15:40] INFO 06_validate_all —   Next step: python scripts/01_prepare_data.py
+[2026-05-01 23:13:17] INFO 06_validate_all — ============================================================
+[2026-05-01 23:13:17] INFO 06_validate_all — AIP-ML-Stack — Comprehensive Validation Suite
+[2026-05-01 23:13:17] INFO 06_validate_all — ============================================================
+[2026-05-01 23:13:17] INFO 06_validate_all — 
+[1] Hand-crafted Feature Extractors
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — AAC shape = (20,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — AAC sums to 1 (1.000000)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — AAC has no NaN
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — DPC shape = (400,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — DPC sums to 1 (1.000000)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — PAAC shape = (30,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — PAAC no NaN
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — GAAC shape = (5,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — GAAC sums to 1 (1.000000)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — CTDC shape = (21,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — CTDC no NaN
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — CTDT shape = (21,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — CTDD shape = (105,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — QSO shape = (40,)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Combined dim = 642 (expected 642)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Combined no NaN
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Combined no Inf
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Batch shape = (14, 642)
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Batch no NaN
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Feature name count = 642
+[2026-05-01 23:13:17] INFO 06_validate_all — 
+[2] Short Sequence Edge Cases
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('ACDEF')
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=5 ('KLMNO')
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('ACDEFG')
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — No NaN for seq len=6 ('KLMNPQ')
+[2026-05-01 23:13:17] INFO 06_validate_all — 
+[3] Preprocessing & Cleaning
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Valid seq accepted
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Too short rejected
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Non-std AA rejected
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Too long rejected
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — Cleaning reduced rows: 18 → 14
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≥ 5 aa
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — All remaining seqs ≤ 40 aa
+[2026-05-01 23:13:17] INFO 06_validate_all —   ✓ PASS — No duplicate sequences
+[2026-05-01 23:13:17] INFO 06_validate_all — 
+[4] Train/Test Split Stratification
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — No samples lost: 11+3=14
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Class ratio similar: train=0.55 test=0.33
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — No train-test overlap (0 duplicates)
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Save/load round-trip preserves sizes
+[2026-05-01 23:13:18] INFO 06_validate_all — 
+[5] Feature Fusion & Selection Pipeline
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Train sample count preserved (80)
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Test sample count preserved (20)
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Same features for train/test (20)
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Final dim ≤ 20 (20)
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Train final no NaN
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Test final no NaN
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Pipeline marked as fitted
+[2026-05-01 23:13:18] INFO 06_validate_all —   ✓ PASS — Feature save/load round-trip correct
+[2026-05-01 23:13:18] INFO 06_validate_all — 
+[6] Metric Computation
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Perfect accuracy = 1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Perfect sensitivity = 1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Perfect specificity = 1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Perfect MCC = 1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Perfect AUC = 1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Bad accuracy = 0.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Bad MCC = -1.0
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Random MCC in [-1,1]: 0.030
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Random AUC in [0,1]: 0.507
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — Bootstrap CI has 'accuracy' key
+[2026-05-01 23:13:20] INFO 06_validate_all —   ✓ PASS — CI lower ≤ upper: (1.0, 1.0)
+[2026-05-01 23:13:20] INFO 06_validate_all — 
+[7] Stacking Ensemble Smoke Test (mock data)
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Ensemble fitted flag set
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — predict_proba shape = (100, 2)
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Probabilities sum to 1
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — All probabilities in [0,1]
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — predict shape = (100,)
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — predict outputs only 0/1: [0 1]
+[2026-05-01 23:13:22] INFO 06_validate_all — 
+[8] Data Leakage Prevention
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Selector has indices (fitted on train only)
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Same columns for train & test: 10
+[2026-05-01 23:13:22] INFO 06_validate_all — 
+============================================================
+[2026-05-01 23:13:22] INFO 06_validate_all — VALIDATION SUMMARY
+[2026-05-01 23:13:22] INFO 06_validate_all — ============================================================
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Hand-crafted features
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Short sequence edge cases
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Preprocessing & cleaning
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Train/test split
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Feature selection pipeline
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Metric computation
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Stacking ensemble smoke test
+[2026-05-01 23:13:22] INFO 06_validate_all —   ✓ PASS — Data leakage prevention
+[2026-05-01 23:13:22] INFO 06_validate_all — 
+  Result: 8/8 tests passed
+[2026-05-01 23:13:22] INFO 06_validate_all —   All tests passed — pipeline is ready for training.
+[2026-05-01 23:13:22] INFO 06_validate_all —   Next step: python scripts/01_prepare_data.py
